@@ -34,7 +34,9 @@ plot_qq(
   plot_ci_lines = TRUE,
   ci_lines_color = "black",
   ci_lines_width = 1,
-  ci_line_type = "solid"
+  ci_line_type = "solid",
+  labels_n = NULL,
+  label_color = "red"
 )
 }
 \arguments{
@@ -98,6 +100,11 @@ Use \code{NA} to refer to the existing minimum and maximum.}
 \item{ci_lines_color}{A string that sets the color of the confidence lines.}
 
 \item{ci_lines_width}{A numeric that sets the confidence lines width.}
+
+\item{labels_n}{A numeric that sets the number of extreme values to label. If
+NULL then no points are labeled.}
+
+\item{label_color}{A string that sets the label color.}
 
 \item{ci_linetype}{A string that sets confidence lines line type. Acceptable values are \code{twodash, solid,
 longdash, dotted, dotdash, dashed}}
