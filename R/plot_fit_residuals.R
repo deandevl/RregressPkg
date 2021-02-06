@@ -1,17 +1,17 @@
-#' Function creates a scatter plot of the OLS fitted versus residual values.
+#' Function creates a scatter plot of the OLS fitted versus residual values for observations.
 #'
 #' @description The fitted values are along the x axis and the residuals are along the y axis.
 #'  Function returns a ggplot2 object which can be further modified. The input consist of
-#'  a data frame containing columns for the dependent and independent variables.
+#'  a data frame of observations containing columns for the response variable and predictor variables.
 #'
-#' @param data_df A data frame containing values for both the observed independent
-#'  and dependent variables.
-#' @param dep_str A string that names the column in \code{data_df} containing the dependent
+#' @param data_df A data frame containing values for both the observed predictors
+#'  and response variable.
+#' @param resp_str A string that names the column in \code{data_df} containing the response
 #'  variable.
-#' @param standardized_resid A logical which if TRUE plots the standardized residuals.
-#' @param standardized_threshold A numeric that sets the threshold for labeling \code{standardized_resid}
-#'  with a row number. The value is usually between 2 to 3.
-#' @param standardized_color A string that sets the text color for standardized residual label.
+#' @param label_threshold A numeric that sets the residual threshold beyond which observations
+#'  will be labeled with their id.
+#' @param label_color A string that sets the label/point color for observations whose absolute
+#'  residual is greater than the \code{label_threshold}.
 #' @param title A string that sets the plot title.
 #' @param subtitle A string that sets the plot subtitle.
 #' @param x_title A string that sets the observed response x axis title.
@@ -54,7 +54,7 @@
 #' @importFrom ggplot2 geom_hline
 #' @importFrom ggplot2 geom_line
 #'
-#' @return Function returns a named list with ols estimates and
+#' @return Function returns a named list with OLS estimates and
 #'  a ggplot2 object of fitted vs residual values.
 #'
 #' @author Rick Dean
@@ -62,10 +62,9 @@
 #' @export
 plot_fit_residuals <- function(
   data_df = NULL,
-  dep_str = NULL,
-  standardized_resid = FALSE,
-  standardized_threshold = NULL,
-  standardized_color = "red",
+  resp_str = NULL,
+  label_threshold = NULL,
+  label_color = "red",
   title = NULL,
   subtitle = NULL,
   x_title = "Fitted Values",
@@ -100,13 +99,10 @@ plot_fit_residuals <- function(
 ){
   ols_regress_lst <- RregressPkg::ols_regress_calc(
     data_df = data_df,
-    dep_str = dep_str
+    dep_str = resp_str
   )
 
   fit_residuals <- ols_regress_lst$resid
-  if(standardized_resid){
-    fit_residuals <- ols_regress_lst$stand_residuals
-  }
 
   dt <- data.table::data.table(
     row_number = rownames(data_df),
@@ -148,16 +144,19 @@ plot_fit_residuals <- function(
   fit_residual_plot <- fit_residual_plot +
     ggplot2::geom_hline(yintercept = 0, color = zero_line_color, size = zero_line_size)
 
+  if(!is.null(label_threshold)){
+    label_data <- dt[abs(fit_residuals) >= label_threshold]
+    fit_residual_plot <- fit_residual_plot +
+      ggplot2::geom_point(data = label_data, color = label_color, size = 2.5) +
+      ggrepel::geom_text_repel(data = label_data, aes(label = row_number), color = label_color)
+  }
+
   if(trend_line){
     trend_model <- stats::loess(fit_residuals ~ fit_values, data = dt)
     fit_residual_plot <- fit_residual_plot +
       ggplot2::geom_line(aes(x = trend_model$x, y = trend_model$fitted), color = trend_line_color, size = trend_line_size)
   }
 
-  if(standardized_resid & !is.null(standardized_threshold)){
-    fit_residual_plot <- fit_residual_plot +
-      ggrepel::geom_text_repel(data = dt[abs(fit_residuals) >= standardized_threshold], aes(label = row_number), color = standardized_color, size = 3.5)
-  }
   return(
     list(
       ols = ols_regress_lst,

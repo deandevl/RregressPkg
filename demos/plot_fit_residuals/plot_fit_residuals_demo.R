@@ -18,31 +18,30 @@ piq_brain_height_dt <- piq_data_dt[,.(PIQ, Brain, Height)]
 
 fit_residual_piq <-  RregressPkg::plot_fit_residuals(
   data_df = piq_brain_height_dt,
-  dep_str = "PIQ",
+  resp_str = "PIQ",
+  label_threshold = 25,
   title = "IQ vs Brain and Height Size",
-  subtitle = "Source: PennState Science",
+  subtitle = "Source: PennState Science; Label Threshold: 25",
   rot_y_tic_label = T
 )
 fit_residual_piq$plot
 
 # ------------Single/Simple Linear Regression Example -----------
 # plot a data set with an obvious outlier
-# note that observation 21 has a standardized residual of 3.68
+# note that observation 21 has a external(also known as deleted) studentized residual of 6.69
 #  and it appears on the plot.
-# Source: PennState Science (https://online.stat.psu.edu/stat462)
+# Source: PennState Science (https://online.stat.psu.edu/stat462) Example 11-2 Revisited
 data_path <- file.path(data_dir, "influence2.txt")
 influence2_data_dt <- data.table::fread(data_path)
 influence2_x_y_dt <- influence2_data_dt[, .(x, y)]
 
 fit_residual_influence <- RregressPkg::plot_fit_residuals(
   data_df = influence2_x_y_dt,
-  dep_str = "y",
-  title = "Data Set With Large Standardized Residual",
-  subtitle = "Obs 21 Std Resid = 3.68; Source: PennState Science",
-  y_title = "Standardized Residuals",
-  rot_y_tic_label = T,
-  standardized_resid = T,
-  standardized_threshold = 3
+  resp_str = "y",
+  label_threshold = 5,
+  title = "Data Set With Large External Studentized Residual",
+  subtitle = "Obs 21 External Studentized Resid = 6.69; Source: PennState Science",
+  rot_y_tic_label = T
 )
 fit_residual_influence$plot
 
@@ -56,7 +55,8 @@ advertise_inter_dt <- advertise_dt[, .(sales, TV, radio, TVxradio = TV * radio)]
 
 fit_residual_advertise <- RregressPkg::plot_fit_residuals(
   data_df = advertise_inter_dt,
-  dep_str = "sales",
+  resp_str = "sales",
+  label_threshold = 3,
   title = "Sales Regressed on TV, Radio, and TVxRadio",
   subtitle = "Model shows an R-square of 96.8% with interaction term",
   rot_y_tic_label = T

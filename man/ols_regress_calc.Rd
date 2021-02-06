@@ -14,7 +14,9 @@ variable.}
 and dependent variables.}
 }
 \value{
-Returning a named list of the linear OLS regression parameter estimates.
+Returning a named list of data frames with coefficient estimates, residual
+statistics, ANOVA of the regression, along with residuals, studentized residuals,
+fitted values, residual standard error, and R^2.
 }
 \description{
 Function will calculate regression OLS parameters with input

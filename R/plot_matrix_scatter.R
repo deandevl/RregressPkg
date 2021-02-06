@@ -8,6 +8,8 @@
 #' @param title A string that sets the overall title.
 #' @param rot_y_tic_label A logical which if TRUE rotates the y tic labels 90 degrees for
 #'  enhanced readability.
+#' @param plot_dim A numeric that sets the overall width/height of the plot in inches.
+#' @param show_axis_titles A logical which if TRUE will display the axis titles.
 #' @param display_plot A logical that if TRUE will display the plot
 #'
 #' @importFrom RplotterPkg create_scatter_plot
@@ -27,12 +29,14 @@ plot_matrix_scatter <- function(
   df,
   title = NULL,
   rot_y_tic_label = FALSE,
+  plot_dim = 8.5,
+  show_axis_titles = TRUE,
   display_plot = TRUE
 ){
-  vars <- colnames(df)
-  n <- length(vars) - 1
-  vars_comb <- utils::combn(vars, 2)
-  plot_sz <- 8.5/n
+  var_names <- colnames(df)
+  n <- length(var_names)
+  vars_comb <- utils::combn(var_names, 2)
+  plot_sz <- plot_dim/n
 
   # Are we doing a title
   if(!is.null(title)){
@@ -72,23 +76,43 @@ plot_matrix_scatter <- function(
   idx <- 1L
   for(i in 1:n){
     for(ii in i:n){
-      x <- vars_comb[1,idx]
-      y <- vars_comb[2,idx]
-      a_plot <- RplotterPkg::create_scatter_plot(
-        df = df,
-        aes_x = x,
-        aes_y = y,
-        rot_y_tic_label = rot_y_tic_label
-      )
-      plot_grob <- ggplot2::ggplotGrob(a_plot)
-      gt_n_n <- gtable::gtable_add_grob(
-        x = gt_n_n,
-        grobs = plot_grob,
-        t = top + i,
-        l = ii,
-        r = ii
-      )
-      idx <- idx + 1
+      if(i == ii){
+        title_grob <- grid::textGrob(
+          label = var_names[[i]],
+          gp = grid::gpar(col = "black", fontsize = 18, fontface = 2L)
+        )
+        gt_n_n <- gtable::gtable_add_grob(
+          x = gt_n_n,
+          grobs = title_grob,
+          t = top + i,
+          l = ii,
+          r = ii
+        )
+      }else {
+        x <- vars_comb[1,idx]
+        y <- vars_comb[2,idx]
+
+        a_plot <- RplotterPkg::create_scatter_plot(
+          df = df,
+          aes_x = x,
+          aes_y = y,
+          rot_y_tic_label = rot_y_tic_label,
+          do_x_title = show_axis_titles,
+          do_y_title = show_axis_titles
+        )
+
+        plot_grob <- ggplot2::ggplotGrob(a_plot)
+
+        gt_n_n <- gtable::gtable_add_grob(
+          x = gt_n_n,
+          grobs = plot_grob,
+          t = top + i,
+          l = ii,
+          r = ii
+        )
+
+        idx <- idx + 1
+      }
     }
   }
   if(display_plot){

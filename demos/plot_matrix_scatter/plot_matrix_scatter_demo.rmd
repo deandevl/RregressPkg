@@ -1,0 +1,86 @@
+---
+title: "plot_matrix_scatter_demo"
+author: "Rick Dean"
+date: "1/27/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(here)
+library(palmerpenguins)
+library(data.table)
+library(grid)
+library(gtable)
+library(RplotterPkg)
+library(RregressPkg)
+```
+
+
+## Advertising Data
+
+### Read data
+```{r}
+current_dir <- here()
+data_path <- file.path(current_dir, "demos/data/Advertising.csv")
+advertise_dt <- data.table::fread(data_path)
+advertise_dt <- advertise_dt[,.(sales,TV,radio,newspaper)]
+```
+
+### Plot scatter matrix
+```{r, fig.width=12, fig.height=12}
+RregressPkg::plot_matrix_scatter(
+  df = advertise_dt,
+  title = "Advertising Predictors of Sales",
+  rot_y_tic_label = T,
+  plot_dim = 10
+)
+```
+
+
+## Penguin Data
+
+### Read data
+```{r}
+data("penguins", package = "palmerpenguins")
+
+penguins_dt <- data.table::setDT(penguins)
+penguins_dt <- penguins_dt[, .(
+  Species = species,
+  Island = island,
+  Bill_Len = bill_length_mm/10,
+  Bill_Dep = bill_depth_mm/10,
+  Flip_Len = flipper_length_mm/100,
+  Body_Mass = body_mass_g/1000,
+  Sex = sex,
+  Year = as.factor(year))]
+penguins_dt <- na.omit(penguins_dt)
+```
+
+### Refactor *Island* and *Species*
+```{r}
+penguins_dt[, `:=`(Island = as.factor(fcase(Island == "Biscoe","Bis",
+                                   Island == "Dream","Dr",
+                                   Island == "Torgersen", "Tor")))]
+
+penguins_dt[,`:=`(Species = as.factor(fcase(Species == "Adelie","Ad",
+                                  Species == "Chinstrap","Ch",
+                                  Species == "Gentoo","Ge")))]
+```
+
+### Plot scatter matrix
+```{r, fig.width=14, fig.height=14}
+RregressPkg::plot_matrix_scatter(
+  df = penguins_dt,
+  title = "Palmer Penguins",
+  plot_dim = 12,
+  rot_y_tic_label = T,
+  show_axis_titles = F
+)
+```
+
+
