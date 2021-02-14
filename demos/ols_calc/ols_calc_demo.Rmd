@@ -1,0 +1,95 @@
+---
+title: "Demo for RregressPkg::ols_calc"
+author: "Rick Dean"
+date: "2/12/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(data.table)
+library(RregressPkg)
+library(RplotterPkg)
+library(wooldridge)
+library(here)
+
+current_dir <- here::here()
+data_dir <- file.path(current_dir, "demos/data")
+```
+
+
+## Multiple Regression College GPA: colGPA ~ hsGPA + ACT + skipped
+
+ colGPA College GPA;  hsGPA: High School GPA;  ACT: ACT score; skipped: days skipped
+ Source: "Using R for Introductory Econometrics" by Florian Heiss, page 105
+ Also: "Introductory Econometrics, A Modern Approach, 6th edition" by Jeffery Wooldridge, page 115
+ 
+### Set up the data
+```{r}
+data("gpa1", package = "wooldridge")
+gpa1_df <- data.frame(
+  colGPA = gpa1$colGPA,
+  hsGPA = gpa1$hsGPA,
+  ACT = gpa1$ACT,
+  skipped = gpa1$skipped
+)
+```
+### Run `RregressPkg::ols_calc()`
+```{r}
+gpa1_ols_ls <- RregressPkg::ols_calc(
+  x = gpa1_df,
+  resp_col = "colGPA"
+)
+```
+
+### Show the coefficient data frame
+```{r}
+RplotterPkg::create_table(
+  x = gpa1_ols_ls$coef_df,
+  caption = "MLR for colGPA ~ hsGPA + ACT + skipped"
+)
+```
+
+### Show sum of the squares
+```{r}
+RplotterPkg::create_table(
+  x = gpa1_ols_ls$anova_df,
+  caption = "SS: colGPA ~ hsGPA + ACT + skipped"
+)
+```
+
+## Multiple Regression Blood Pressure: BP ~ age + weight + bsa + dur + pulse + stress
+
+Check correlations among all variables - predictors and response
+Source: PennState Stat 501 Eberly College of Science, Section 12.1, Example 12.1
+
+### Set up the data
+```{r}
+data_path <- file.path(data_dir, "bloodpress.txt")
+bloodpress_dt <- data.table::fread(data_path)
+bloodpress_dt <- bloodpress_dt[, !c("Pt")]
+```
+
+### Run `RregressPkg::ols_calc()`
+```{r}
+bloodpress_ols_ls <- RregressPkg::ols_calc(
+  x = bloodpress_dt,
+  resp_col = "BP"
+)
+```
+
+### Show the correlations among the variables
+```{r}
+RplotterPkg::create_table(
+  x = bloodpress_ols_ls$corr_df,
+  caption = "BP ~ age + weight + bsa + dur + pulse + stress"
+)
+```
+
+
+
+
+
