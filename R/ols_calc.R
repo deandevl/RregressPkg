@@ -1,15 +1,13 @@
 #' Function computes linear OLS regression parameter estimates
 #'
-#' @description Function will calculate regression OLS parameters with input
-#'  from a data frame containing columns for a response variable and predictor
-#'  variables or a "lm" class object.
+#' @description The function requires a data frame with columns for observed response and predictors,
+#'  and a formula object (class = dQuote{formula}) that describes the OLS model of interest.
 #'
-#' @param x Either an object of class "lm" from an OLS estimate or a data frame containing
-#'  values for the predictor variables and the response variable.
-#' @param resp_col A string that names the column from \code{x} containing the response
-#'  values if \code{x} is a data frame.
-#'
-#' @importFrom data.table setDT
+#' @param df A data frame with columns for observed response and predictors
+#' @param formula_obj A formula object following the rules of \code{stats::lm()} construction.
+#'  For example: y ~ log(a) + b + I(b^2) or suppress the constant with \code{0} in the formula.
+#' @param na_omit A logical which if TRUE will omit rows that have NA values. If the
+#'  data contains NA's then the correlation matrix will not be computed.
 #'
 #' @return Returning a named list of data frames with OLS coefficient estimates, residual
 #'  statistics, ANOVA of the regression along with residuals, fitted values, and R^2.
@@ -18,34 +16,26 @@
 #'
 #' @export
 ols_calc <- function(
-  x = NULL,
-  resp_col = NULL
+  df = NULL,
+  formula_obj = NULL,
+  na_omit = FALSE
 ){
-
-  if("lm" %in% class(x)){
-    dt <- data.table::setDT(x$model)
-  }else if("data.frame" %in% class(x)) {
-    dt <- data.table::setDT(x)
-  }else {
-    stop('The "x" argument must be either an object of class "lm" or "data.frame" ')
+  if(na_omit){
+    df <- na.omit(df)
   }
 
-  # ---------------- regression with intercept----------------------
-  X_dt <- dt[, !..resp_col]
-  Y_dt <- dt[, ..resp_col]
-  X <- as.matrix(X_dt)
-  Y <- as.matrix(Y_dt)
+  X <- stats::model.matrix(formula_obj, data = df)
+  Y <- as.matrix(subset(stats::model.frame(formula_obj, data = df),select = 1))
 
-  Interc <- 1
-  X_intercept <- cbind(Interc,X)
+  #variables <- all.vars(terms(formula_obj, data = df))
 
-  X_intercept_t <- t(X_intercept)
-  X_intercept_inverse <- solve(X_intercept_t %*% X_intercept)
+  X_t <- t(X)
+  X_inverse <- solve(X_t %*% X)
 
-  Coef <- X_intercept_inverse %*% X_intercept_t %*% Y
+  Coef <- X_inverse %*% X_t %*% Y
 
   # compute the hat matrix
-  Hat <- X_intercept %*% X_intercept_inverse %*% X_intercept_t
+  Hat <- X %*% X_inverse %*% X_t
 
   # fitted
   Fitted_val <- (Hat %*% Y)
@@ -75,7 +65,7 @@ ols_calc <- function(
   sse <- sum((Y[,1] - Fitted_val[,1])^2)
 
   # corrected sum of squares total (SST)
-  sst <- sum((Y - mean(Y[,]))^2)
+  sst <- sum((Y - mean(Y[,1]))^2)
   # note: ssm + sse = sst
 
   # mean of squares for model (MSM)
@@ -92,7 +82,7 @@ ols_calc <- function(
 
   # ------------------significance tests------------------
   # predictors variance-covariance matrix
-  var_cov <- mse * X_intercept_inverse
+  var_cov <- mse * X_inverse
 
   # estimated standard error of coefficients
   coef_se <- sqrt(diag(var_cov))
@@ -125,7 +115,7 @@ ols_calc <- function(
 
   # coefficients
   coef_df <- data.frame(
-    Coef = c("Intercept", colnames(X_dt)),
+    Coef = rownames(Coef),
     Value = Coef[,1],
     SE = coef_se,
     t_value = t_value,
@@ -134,16 +124,40 @@ ols_calc <- function(
 
   # correlations between all variables
   # includes both the response and predictors
-  means_dt <- dt[, lapply(dt, function(x) mean(x))]
-  means_mt <- matrix(data = 1, nrow = n) %*% as.matrix(means_dt, rownames = F)
-  dt_mt <- as.matrix(dt)
-  diff_mt <- dt_mt - means_mt
-  var_cor_mt <- t(diff_mt) %*% diff_mt * (n - 1)^-1
-  var_mt <- diag(var_cor_mt)
-  sd_mt <- sqrt(var_mt)
-  sd_product_mt <- sd_mt %*% t(sd_mt)
-  corr_df <- as.data.frame(var_cor_mt / sd_product_mt)
+  #compute the variable means
+  corr_df <- NULL
+  if(!anyNA(df)){
+    df <- apply(X = df, MARGIN = 2, FUN = function(x){
+      as.numeric(x)
+    })
 
+    means_v <- apply(X = df, MARGIN = 2, FUN = function(x){
+      mean(x)
+    })
+    # create a means for each column of variables
+    M <- matrix(means_v, nrow = 1)
+    means_mt <- matrix(data = 1, nrow = n) %*% M
+
+    # subtract the means from data
+    df_mt <- as.matrix(df)
+    diff_mt <- df_mt - means_mt
+
+    # create covariance matrix
+    var_cor_mt <- t(diff_mt) %*% diff_mt * (n - 1)^-1
+
+    # compute variables sd
+    var_mt <- diag(var_cor_mt)
+    sd_mt <- sqrt(var_mt)
+    sd_product_mt <- sd_mt %*% t(sd_mt)
+
+    # divide by var-cor matrix by sd
+    corr_df <- as.data.frame(var_cor_mt / sd_product_mt)
+    variable_names_df <- data.frame(Variable = colnames(corr_df))
+    corr_df <- cbind(variable_names_df, corr_df)
+
+    #check with R's cor()
+    #corr_check_df <- stats::cor(df)
+  }
   # analysis of variance
   anova_df <- data.frame(
     Source = c("Regression", "Residual Error", "Total"),

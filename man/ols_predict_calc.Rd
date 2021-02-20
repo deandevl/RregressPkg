@@ -2,24 +2,23 @@
 % Please edit documentation in R/ols_predict_calc.R
 \name{ols_predict_calc}
 \alias{ols_predict_calc}
-\title{Function computes response values for a certain set of predictor values}
+\title{Function computes response values for a certain set of constant predictor values}
 \usage{
 ols_predict_calc(
-  x = NULL,
-  resp_col = NULL,
+  df = NULL,
+  formula_obj = NULL,
   predictors_df = NULL,
   interval = "confidence",
   confid_level = 0.95
 )
 }
 \arguments{
-\item{x}{Either an object of class "lm" from an OLS estimate or a data frame containing
-values for the predictor variables and the response variable.}
+\item{df}{A data frame with columns for observed response and predictors}
 
-\item{resp_col}{A string that names the column from \code{x} containing the response
-values if \code{x} is a data frame.}
+\item{formula_obj}{A formula object following the rules of \code{stats::lm()} construction.
+For example: y ~ log(a) + b + I(b^2) or suppress the constant with \code{0} in the formula}
 
-\item{predictors_df}{A data frame of predictor values to use for estimating the responses.}
+\item{predictors_df}{A data frame of predictor value constants to use for estimating the responses.}
 
 \item{interval}{A string that sets the type of confidence interval.  Acceptable values
 are dQuote{confidence} or dQuote{prediction}.}
@@ -28,14 +27,14 @@ are dQuote{confidence} or dQuote{prediction}.}
 intervals. The default is 0.95.}
 }
 \value{
-Returning a named list with the OLS response values and their corresponding
+Returning a data frame with the OLS response values and their corresponding
 upper and lower confidence intervals for both "fitted value" and "predicted value". Also
 the standard errors used in the CI estimation.
 }
 \description{
-Function calculates response values from an estimated OLS regression
-of predictor variables.  Given values for the predictors and OLS model, the function returns
-the corresponding predicted response values, their standard errors, and either
+The function requires a data frame with columns for observed response and predictors,
+a formula object (class = dQuote{formula}), and a data frame of predictor constants. From the
+predictor constants estimates of the response are calculated along with their corresponding
 "confidence" or "prediction" intervals.
 }
 \author{

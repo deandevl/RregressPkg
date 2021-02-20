@@ -5,7 +5,8 @@
 #'  parameters.
 #'
 #' @param X A numeric matrix or data frame with rows of observations and their respective predictor
-#'  values across the columns.
+#'  values across the columns. If you want a constant/intercept in the model then you must add a
+#'  column of one's to this matrix.
 #' @param Y A numeric matrix or data frame consisting of one column of the observations response
 #'  values.
 #'
@@ -23,16 +24,13 @@ ols_matrix_calc <- function(X, Y) {
   k <- ncol(X)
   p <- k + 1
 
-  Interc <- c(Inter = 1)
-  X_intercept <- cbind(Interc,X)
+  X_t <- t(X)
+  X_inverse <- solve(X_t %*% X)
 
-  X_intercept_t <- t(X_intercept)
-  X_intercept_inverse <- solve(X_intercept_t %*% X_intercept)
-
-  Coef <- X_intercept_inverse %*% X_intercept_t %*% Y
+  Coef <- X_inverse %*% X_t %*% Y
 
   # compute the hat matrix
-  Hat <- X_intercept %*% X_intercept_inverse %*% X_intercept_t
+  Hat <- X %*% X_inverse %*% X_t
 
   # fitted
   Fitted_val <- (Hat %*% Y)
@@ -46,6 +44,10 @@ ols_matrix_calc <- function(X, Y) {
   # sum of squares for error (SSE)
   sse <- sum((Y[,1] - Fitted_val[,1])^2)
 
+  # corrected sum of squares total (SST)
+  sst <- sum((Y - mean(Y[,1]))^2)
+  # note: ssm + sse = sst
+
   # mean squared error (MSE) or mean squared deviation(MSD)
   mse <- sse / (n - k - 1)
 
@@ -53,10 +55,16 @@ ols_matrix_calc <- function(X, Y) {
   rse <- sqrt(mse)
 
   # predictors variance-covariance matrix
-  var_cov <- mse * X_intercept_inverse
+  var_cov <- mse * X_inverse
 
   # estimated standard error of coefficients
   coef_se <- sqrt(diag(var_cov))
+
+  #R^2
+  r_squared <- ssm / sst
+
+  # adjusted r_squared
+  r_squared_adj <- 1 - (1 - r_squared)*(n - 1)/(n - p)
 
   return(
     list(
@@ -72,6 +80,8 @@ ols_matrix_calc <- function(X, Y) {
       rse = rse,
       var_cov = var_cov,
       coef_se = coef_se,
+      r_squared = r_squared,
+      r_squared_adj = r_squared_adj,
       n = n,
       k = k,
       p = p

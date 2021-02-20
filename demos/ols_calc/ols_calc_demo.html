@@ -222,8 +222,8 @@ gpa1_df &lt;- data.frame(
 <div id="run-rregresspkgols_calc" class="section level3">
 <h3>Run <code>RregressPkg::ols_calc()</code></h3>
 <pre class="r"><code>gpa1_ols_ls &lt;- RregressPkg::ols_calc(
-  x = gpa1_df,
-  resp_col = &quot;colGPA&quot;
+  df = gpa1_df,
+  formula_obj = colGPA ~ hsGPA + ACT + skipped
 )</code></pre>
 </div>
 <div id="show-the-coefficient-data-frame" class="section level3">
@@ -270,13 +270,13 @@ Intercept
 1.38955383
 </td>
 <td>
-0.33155354
+0.33277025
 </td>
 <td>
-4.191039
+4.175715
 </td>
 <td>
-4.950269e-05
+5.275548e-05
 </td>
 </tr>
 <tr>
@@ -287,13 +287,13 @@ hsGPA
 0.41181617
 </td>
 <td>
-0.09367422
+0.09401798
 </td>
 <td>
-4.396260
+4.380185
 </td>
 <td>
-2.192050e-05
+2.349426e-05
 </td>
 </tr>
 <tr>
@@ -304,13 +304,13 @@ ACT
 0.01472023
 </td>
 <td>
-0.01056487
+0.01060364
 </td>
 <td>
-1.393319
+1.388224
 </td>
 <td>
-1.657799e-01
+1.673386e-01
 </td>
 </tr>
 <tr>
@@ -321,13 +321,13 @@ skipped
 -0.08311314
 </td>
 <td>
-0.02599853
+0.02609394
 </td>
 <td>
--3.196840
+-3.185151
 </td>
 <td>
-1.725431e-03
+1.794281e-03
 </td>
 </tr>
 </tbody>
@@ -369,13 +369,13 @@ MS
 Regression
 </td>
 <td>
-3
+4
 </td>
 <td>
 4.533133
 </td>
 <td>
-1.5110444
+1.133283
 </td>
 </tr>
 <tr>
@@ -383,13 +383,13 @@ Regression
 Residual Error
 </td>
 <td>
-137
+136
 </td>
 <td>
 14.872966
 </td>
 <td>
-0.1085618
+0.109360
 </td>
 </tr>
 <tr>
@@ -422,26 +422,29 @@ bloodpress_dt &lt;- bloodpress_dt[, !c(&quot;Pt&quot;)]</code></pre>
 <div id="run-rregresspkgols_calc-1" class="section level3">
 <h3>Run <code>RregressPkg::ols_calc()</code></h3>
 <pre class="r"><code>bloodpress_ols_ls &lt;- RregressPkg::ols_calc(
-  x = bloodpress_dt,
-  resp_col = &quot;BP&quot;
+  df = bloodpress_dt,
+  formula_obj = BP ~ Age + Weight + BSA + Dur + Pulse + Stress
 )</code></pre>
 </div>
 <div id="show-the-correlations-among-the-variables" class="section level3">
 <h3>Show the correlations among the variables</h3>
 <pre class="r"><code>RplotterPkg::create_table(
   x = bloodpress_ols_ls$corr_df,
-  caption = &quot;BP ~ age + weight + bsa + dur + pulse + stress&quot;
+  caption = &quot;BP ~ Age + Weight + BSA + Dur + Pulse + Stress&quot;
 )</code></pre>
 <table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
 <caption>
 <center>
 <div style="font-weight:bold;font-size:20px; color:black">
-BP ~ age + weight + bsa + dur + pulse + stress
+BP ~ Age + Weight + BSA + Dur + Pulse + Stress
 </div>
 </center>
 </caption>
 <thead>
 <tr>
+<th style="font-weight: bold;color: black !important;background-color: white !important;font-size: 18px;-webkit-transform: rotate(0deg); -moz-transform: rotate(0deg); -ms-transform: rotate(0deg); -o-transform: rotate(0deg); transform: rotate(0deg);border-bottom: 4px solid black;">
+Variable
+</th>
 <th style="font-weight: bold;color: black !important;background-color: white !important;font-size: 18px;-webkit-transform: rotate(0deg); -moz-transform: rotate(0deg); -ms-transform: rotate(0deg); -o-transform: rotate(0deg); transform: rotate(0deg);border-bottom: 4px solid black;">
 BP
 </th>
@@ -468,16 +471,19 @@ Stress
 <tbody>
 <tr>
 <td>
+BP
+</td>
+<td>
 1.0000000
 </td>
 <td>
 0.6590930
 </td>
 <td>
-0.9500677
+0.95006765
 </td>
 <td>
-0.8658789
+0.86587887
 </td>
 <td>
 0.2928336
@@ -486,10 +492,13 @@ Stress
 0.7214132
 </td>
 <td>
-0.1639014
+0.16390139
 </td>
 </tr>
 <tr>
+<td>
+Age
+</td>
 <td>
 0.6590930
 </td>
@@ -497,10 +506,10 @@ Stress
 1.0000000
 </td>
 <td>
-0.4073493
+0.40734926
 </td>
 <td>
-0.3784546
+0.37845460
 </td>
 <td>
 0.3437921
@@ -509,10 +518,13 @@ Stress
 0.6187643
 </td>
 <td>
-0.3682237
+0.36822369
 </td>
 </tr>
 <tr>
+<td>
+Weight
+</td>
 <td>
 0.9500677
 </td>
@@ -520,10 +532,10 @@ Stress
 0.4073493
 </td>
 <td>
-1.0000000
+1.00000000
 </td>
 <td>
-0.8753048
+0.87530481
 </td>
 <td>
 0.2006496
@@ -532,10 +544,13 @@ Stress
 0.6593399
 </td>
 <td>
-0.0343547
+0.03435475
 </td>
 </tr>
 <tr>
+<td>
+BSA
+</td>
 <td>
 0.8658789
 </td>
@@ -543,10 +558,10 @@ Stress
 0.3784546
 </td>
 <td>
-0.8753048
+0.87530481
 </td>
 <td>
-1.0000000
+1.00000000
 </td>
 <td>
 0.1305400
@@ -555,10 +570,13 @@ Stress
 0.4648188
 </td>
 <td>
-0.0184463
+0.01844634
 </td>
 </tr>
 <tr>
+<td>
+Dur
+</td>
 <td>
 0.2928336
 </td>
@@ -566,10 +584,10 @@ Stress
 0.3437921
 </td>
 <td>
-0.2006496
+0.20064959
 </td>
 <td>
-0.1305400
+0.13054001
 </td>
 <td>
 1.0000000
@@ -578,10 +596,13 @@ Stress
 0.4015144
 </td>
 <td>
-0.3116398
+0.31163982
 </td>
 </tr>
 <tr>
+<td>
+Pulse
+</td>
 <td>
 0.7214132
 </td>
@@ -589,10 +610,10 @@ Stress
 0.6187643
 </td>
 <td>
-0.6593399
+0.65933987
 </td>
 <td>
-0.4648188
+0.46481881
 </td>
 <td>
 0.4015144
@@ -601,10 +622,13 @@ Stress
 1.0000000
 </td>
 <td>
-0.5063101
+0.50631008
 </td>
 </tr>
 <tr>
+<td>
+Stress
+</td>
 <td>
 0.1639014
 </td>
@@ -612,10 +636,10 @@ Stress
 0.3682237
 </td>
 <td>
-0.0343547
+0.03435475
 </td>
 <td>
-0.0184463
+0.01844634
 </td>
 <td>
 0.3116398
@@ -624,7 +648,7 @@ Stress
 0.5063101
 </td>
 <td>
-1.0000000
+1.00000000
 </td>
 </tr>
 </tbody>

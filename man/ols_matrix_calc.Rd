@@ -8,7 +8,8 @@ ols_matrix_calc(X, Y)
 }
 \arguments{
 \item{X}{A numeric matrix or data frame with rows of observations and their respective predictor
-values across the columns.}
+values across the columns. If you want a constant/intercept in the model then you must add a
+column of one's to this matrix.}
 
 \item{Y}{A numeric matrix or data frame consisting of one column of the observations response
 values.}

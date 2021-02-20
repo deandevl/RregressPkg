@@ -4,23 +4,24 @@
 \alias{ols_calc}
 \title{Function computes linear OLS regression parameter estimates}
 \usage{
-ols_calc(x = NULL, resp_col = NULL)
+ols_calc(df = NULL, formula_obj = NULL, na_omit = FALSE)
 }
 \arguments{
-\item{x}{Either an object of class "lm" from an OLS estimate or a data frame containing
-values for the predictor variables and the response variable.}
+\item{df}{A data frame with columns for observed response and predictors}
 
-\item{resp_col}{A string that names the column from \code{x} containing the response
-values if \code{x} is a data frame.}
+\item{formula_obj}{A formula object following the rules of \code{stats::lm()} construction.
+For example: y ~ log(a) + b + I(b^2) or suppress the constant with \code{0} in the formula.}
+
+\item{na_omit}{A logical which if TRUE will omit rows that have NA values. If the
+data contains NA's then the correlation matrix will not be computed.}
 }
 \value{
 Returning a named list of data frames with OLS coefficient estimates, residual
 statistics, ANOVA of the regression along with residuals, fitted values, and R^2.
 }
 \description{
-Function will calculate regression OLS parameters with input
-from a data frame containing columns for a response variable and predictor
-variables or a "lm" class object.
+The function requires a data frame with columns for observed response and predictors,
+and a formula object (class = dQuote{formula}) that describes the OLS model of interest.
 }
 \author{
 Rick Dean

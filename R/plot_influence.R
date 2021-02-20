@@ -5,13 +5,11 @@
 #'  Both a data frame and a plot of each observations influence on the OLS estimate are
 #'  returned to help identify data points as possible outliers and/or high leverage.
 #'
-#' @param x Either an object of class "lm" from an OLS estimate or a data frame containing
-#'  values for the predictor variables and the response variable along with optionally a column
-#'  for observation identification.
+#' @param df A data frame with columns for observed response and predictors
+#' @param formula_obj A formula object following the rules of \code{stats::lm()} construction.
+#'  For example: y ~ log(a) + b + I(b^2) or suppress the constant with \code{0} in the formula.
 #' @param obser_limit An integer that sets the maximum number of observations to be considered.
 #'  The default is 500.
-#' @param resp_col A string that names the column from data frame \code{x} containing the response
-#'  values.
 #' @param id_col An optional argument that names the column from data frame \code{x} providing
 #'  each observation with a unique identification value.  If this argument is NULL then
 #'  data frame row numbers are used for identification. Unless you have less than 30 observations,
@@ -48,8 +46,6 @@
 #' @param do_x_title A logical that controls the appearance of the x axis title.
 #' @param do_y_title A logical that controls the appearance of the y axis title.
 #'
-#' @importFrom data.table data.table
-#' @importFrom data.table setDT
 #' @importFrom RplotterPkg create_scatter_plot
 #'
 #' @return Function returns a named list with both a data frame of influence measures
@@ -60,9 +56,9 @@
 #'
 #' @export
 plot_influence <- function(
-  x = NULL,
+  df = NULL,
+  formula_obj = NULL,
   obser_limit = 500,
-  resp_col = NULL,
   id_col = NULL,
   influence_meas = "cook",
   label_threshold = 3,
@@ -89,30 +85,18 @@ plot_influence <- function(
   do_x_title = TRUE,
   do_y_title = TRUE
 ){
-  dt <- NULL
-  ols <- NULL
-  if("lm" %in% class(x)){
-    dt <- data.table::setDT(x$model)
-  }else if("data.frame" %in% class(x)) {
-    dt <- data.table::setDT(x)
-  }else {
-    stop('The "x" argument must be either an object of class "lm" or "data.frame" ')
-  }
 
-  Y <- as.matrix(dt[, ..resp_col])
-  out_columns <- resp_col
-  if(!is.null(id_col)){
-    out_columns <- c(out_columns, id_col)
-  }
-  X <- as.matrix(dt[, !..out_columns])
-  ols <- RregressPkg::ols_matrix_calc(X = X, Y = Y)
+  X <- stats::model.matrix(formula_obj, data = df)
+  Y_df <- subset(stats::model.frame(formula_obj, data = df),select = 1)
+
+  ols <- RregressPkg::ols_matrix_calc(X = X, Y = Y_df)
 
   influence_vals <- NULL
 
   if(influence_meas == "internal"){
     # compute studentized residuals or internally studentized residuals
     Hat_ii <- diag(ols$Hat)
-    influence_vals <- (ols$Resid / sqrt(ols$mse * (1 - Hat_ii)))[,1]
+    influence_vals <- ols$Resid / sqrt(ols$mse * (1 - Hat_ii))
   }else if(influence_meas == "external"){
     # compute the studentized deleted residuals or externally studentized residuals
     Hat_ii <- diag(ols$Hat)
@@ -120,7 +104,7 @@ plot_influence <- function(
     p <- ols$k + 1
     numer <- ols$n - p - 1
     denom <- ols$n - p - student_residuals^2
-    influence_vals <- (student_residuals * sqrt(numer/denom))[,1]
+    influence_vals <- student_residuals * sqrt(numer/denom)
   }else if(influence_meas == "dffits"){
     # compute the Difference in Fits(DFFITS)
     n <- ols$n
@@ -154,20 +138,22 @@ plot_influence <- function(
 
   # create a plot object of the influence values
   if(!is.null(id_col)){
-    id_v <- unlist(dt[, ..id_col])
-    influence_dt <- data.table::data.table(
+    id_v <- df[[id_col]]
+    influence_df <- data.frame(
       id = factor(id_v, levels = id_v)
     )
   }else {
-    id_v <- 1: nrow(dt)
-    influence_dt <- data.table::data.table(
+    id_v <- 1: nrow(df)
+    influence_df <- data.frame(
       id = id_v
     )
   }
-  influence_dt[, influence_vals := influence_vals]
+
+  influence_vals_df <- data.frame(influence_vals = influence_vals)
+  influence_df <- cbind(influence_df, influence_vals_df)
 
   influence_plot <- RplotterPkg::create_scatter_plot(
-    df = influence_dt,
+    df = influence_df,
     aes_x = "id",
     aes_y = "influence_vals",
     title = title,
@@ -192,14 +178,16 @@ plot_influence <- function(
     show_minor_grids = show_minor_grids
   )
 
-  label_data <- influence_dt[abs(influence_vals) >= label_threshold]
+  label_data_df <- subset(influence_df, abs(influence_vals) >= label_threshold)
+
+  #label_data <- influence_dt[abs(influence_vals) >= label_threshold]
   influence_plot <- influence_plot +
-    ggplot2::geom_point(data = label_data, color = label_color, size = 2.5) +
-    ggrepel::geom_text_repel(data = label_data, aes(label = id), color = label_color)
+    ggplot2::geom_point(data = label_data_df, color = label_color, size = 2.5) +
+    ggrepel::geom_text_repel(data = label_data_df, aes(label = id), color = label_color)
 
   return(
     list(
-      influence = influence_dt,
+      influence = influence_df,
       plot = influence_plot
     )
   )

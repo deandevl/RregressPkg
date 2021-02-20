@@ -1,24 +1,20 @@
-#' Function computes response values for a certain set of predictor values
+#' Function computes response values for a certain set of constant predictor values
 #'
-#' @description Function calculates response values from an estimated OLS regression
-#'  of predictor variables.  Given values for the predictors and OLS model, the function returns
-#'  the corresponding predicted response values, their standard errors, and either
+#' @description The function requires a data frame with columns for observed response and predictors,
+#'  a formula object (class = dQuote{formula}), and a data frame of predictor constants. From the
+#'  predictor constants estimates of the response are calculated along with their corresponding
 #'  "confidence" or "prediction" intervals.
 #'
-#' @param x Either an object of class "lm" from an OLS estimate or a data frame containing
-#'  values for the predictor variables and the response variable.
-#' @param resp_col A string that names the column from \code{x} containing the response
-#'  values if \code{x} is a data frame.
-#' @param predictors_df A data frame of predictor values to use for estimating the responses.
+#' @param df A data frame with columns for observed response and predictors
+#' @param formula_obj A formula object following the rules of \code{stats::lm()} construction.
+#'  For example: y ~ log(a) + b + I(b^2) or suppress the constant with \code{0} in the formula
+#' @param predictors_df A data frame of predictor value constants to use for estimating the responses.
 #' @param interval A string that sets the type of confidence interval.  Acceptable values
 #'  are dQuote{confidence} or dQuote{prediction}.
 #' @param confid_level A numeric that defines the confidence level for estimating confidence
 #'  intervals. The default is 0.95.
 #'
-#' @importFrom data.table data.table
-#' @importFrom data.table setDT
-#'
-#' @return Returning a named list with the OLS response values and their corresponding
+#' @return Returning a data frame with the OLS response values and their corresponding
 #'   upper and lower confidence intervals for both "fitted value" and "predicted value". Also
 #'   the standard errors used in the CI estimation.
 #'
@@ -26,82 +22,87 @@
 #'
 #' @export
 ols_predict_calc <- function(
-  x = NULL,
-  resp_col = NULL,
+  df = NULL,
+  formula_obj = NULL,
   predictors_df = NULL,
   interval = "confidence",
   confid_level = 0.95
 ){
-  if("lm" %in% class(x)){
-    dt <- data.table::setDT(x$model)
-  }else if("data.frame" %in% class(x)) {
-    dt <- data.table::setDT(x)
-  }
-  X_dt <- dt[, !..resp_col]
-  Y_dt <- dt[, ..resp_col]
+  # construct a predict_mt matrix that follows the model formula
+  # with a column of 0's for the intercept
 
-  predictor_names <- colnames(predictors_df)
-  data.table::setcolorder(X_dt, predictor_names)
+  # create a response variable df with a dummy value of 0
+  variables <- all.vars(terms(formula_obj, data = df))
+  response_df <- data.frame(v = 0)
+  colnames(response_df) <- variables[[1]]
 
-  predictor_vals_mt <- as.matrix(predictors_df)
+  # create a df that binds response and predictor df's
+  predictors_df <- cbind(response_df, predictors_df)
 
-  return_dt <- data.table()
+  # get the model.matrix using the formula and predictors_df for data
+  predict_mt <- stats::model.matrix(formula_obj, data = predictors_df)
+
+  # set "(Intercept)" column to 0
+  predict_mt[,"(Intercept)"] <- 0
+
+  X <- stats::model.matrix(formula_obj, data = df)
+  Y <- as.matrix(subset(stats::model.frame(formula_obj, data = df),select = 1))
+
+  return_df <- data.frame()
 
   if(interval == "confidence"){
-    for(i in 1:nrow(predictor_vals_mt)) {
+    for(i in 1:nrow(predict_mt)) {
       # subtract constant predictor values from sample predictor values
-      diff_mt <- t(apply(X = X_dt, MARGIN = 1, FUN = function(x) x - predictor_vals_mt[i,]))
-
+      diff_mt <- t(apply(X = X, MARGIN = 1, FUN = function(x) x - predict_mt[i,]))
       # estimate OLS
       ols <- RregressPkg::ols_matrix_calc(
         X = diff_mt,
-        Y = Y_dt
+        Y = Y
       )
 
       # compute confidence intervals
       t_val <- stats::qt(1 - (1 - confid_level)/2.0, ols$n - ols$p)
+      se <- ols$coef_se[["(Intercept)"]]
+      ci_lower <- ols$Coef[["(Intercept)"]] - se * t_val
+      ci_upper <- ols$Coef[["(Intercept)"]] + se * t_val
 
-      se <- ols$coef_se[["Interc"]]
-      ci_lower <- ols$Coef[["Interc"]] - se * t_val
-      ci_upper <- ols$Coef[["Interc"]] + se * t_val
-
-      confid_dt <- data.table(
-        fit = ols$Coef[["Interc"]],
+      confid_df <- data.frame(
+        fit = ols$Coef[["(Intercept)"]],
         lwr = ci_lower,
         upr = ci_upper,
         se = se
       )
 
-      return_dt <- rbind(return_dt, confid_dt)
+      return_df <- rbind(return_df, confid_df)
     }
   }else if(interval == "prediction"){
-    for(i in 1:nrow(predictor_vals_mt)) {
+    for(i in 1:nrow(predict_mt)) {
       # subtract constant predictor values from sample predictor values
-      diff_mt <- t(apply(X = X_dt, MARGIN = 1, FUN = function(x) x - predictor_vals_mt[i,]))
+      diff_mt <- t(apply(X = X, MARGIN = 1, FUN = function(x) x - predict_mt[i,]))
 
       # estimate OLS
       ols <- RregressPkg::ols_matrix_calc(
         X = diff_mt,
-        Y = Y_dt
+        Y = Y
       )
 
       # compute confidence intervals
       t_val <- stats::qt(1 - (1 - confid_level)/2.0, ols$n - ols$p)
 
-      se <- sqrt(ols$coef_se[["Interc"]]^2 + ols$mse)
-      ci_lower <- ols$Coef[["Interc"]] -  se * t_val
-      ci_upper <- ols$Coef[["Interc"]] +  se * t_val
+      se <- sqrt(ols$coef_se[["(Intercept)"]]^2 + ols$mse)
+      ci_lower <- ols$Coef[["(Intercept)"]] -  se * t_val
+      ci_upper <- ols$Coef[["(Intercept)"]] +  se * t_val
 
-      confid_dt <- data.table(
-        fit = ols$Coef[["Interc"]],
+      confid_df <- data.frame(
+        fit = ols$Coef[["(Intercept)"]],
         lwr = ci_lower,
         upr = ci_upper,
         se = se
       )
 
-      return_dt <- rbind(return_dt, confid_dt)
+      return_df <- rbind(return_df, confid_df)
     }
   }
 
-  return(return_dt)
+  return(return_df)
 }

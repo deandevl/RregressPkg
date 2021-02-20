@@ -5,9 +5,9 @@
 \title{Function performs measures of influence to the submitted OLS model}
 \usage{
 plot_influence(
-  x = NULL,
+  df = NULL,
+  formula_obj = NULL,
   obser_limit = 500,
-  resp_col = NULL,
   id_col = NULL,
   influence_meas = "cook",
   label_threshold = 3,
@@ -36,15 +36,13 @@ plot_influence(
 )
 }
 \arguments{
-\item{x}{Either an object of class "lm" from an OLS estimate or a data frame containing
-values for the predictor variables and the response variable along with optionally a column
-for observation identification.}
+\item{df}{A data frame with columns for observed response and predictors}
+
+\item{formula_obj}{A formula object following the rules of \code{stats::lm()} construction.
+For example: y ~ log(a) + b + I(b^2) or suppress the constant with \code{0} in the formula.}
 
 \item{obser_limit}{An integer that sets the maximum number of observations to be considered.
 The default is 500.}
-
-\item{resp_col}{A string that names the column from data frame \code{x} containing the response
-values.}
 
 \item{id_col}{An optional argument that names the column from data frame \code{x} providing
 each observation with a unique identification value.  If this argument is NULL then

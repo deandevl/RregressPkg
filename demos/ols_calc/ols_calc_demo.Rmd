@@ -40,8 +40,8 @@ gpa1_df <- data.frame(
 ### Run `RregressPkg::ols_calc()`
 ```{r}
 gpa1_ols_ls <- RregressPkg::ols_calc(
-  x = gpa1_df,
-  resp_col = "colGPA"
+  df = gpa1_df,
+  formula_obj = colGPA ~ hsGPA + ACT + skipped
 )
 ```
 
@@ -76,8 +76,8 @@ bloodpress_dt <- bloodpress_dt[, !c("Pt")]
 ### Run `RregressPkg::ols_calc()`
 ```{r}
 bloodpress_ols_ls <- RregressPkg::ols_calc(
-  x = bloodpress_dt,
-  resp_col = "BP"
+  df = bloodpress_dt,
+  formula_obj = BP ~ Age + Weight + BSA + Dur + Pulse + Stress
 )
 ```
 
@@ -85,7 +85,7 @@ bloodpress_ols_ls <- RregressPkg::ols_calc(
 ```{r}
 RplotterPkg::create_table(
   x = bloodpress_ols_ls$corr_df,
-  caption = "BP ~ age + weight + bsa + dur + pulse + stress"
+  caption = "BP ~ Age + Weight + BSA + Dur + Pulse + Stress"
 )
 ```
 
