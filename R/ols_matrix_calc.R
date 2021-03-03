@@ -21,7 +21,7 @@ ols_matrix_calc <- function(X, Y) {
   Y <- as.matrix(Y)
 
   n <- nrow(Y)
-  k <- ncol(X)
+  k <- ncol(X)-1
   p <- k + 1
 
   X_t <- t(X)

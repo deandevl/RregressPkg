@@ -2,6 +2,7 @@
 
 export(low_predictor_collinearity)
 export(mom_beta)
+export(ols_BP_test_calc)
 export(ols_F_calc)
 export(ols_calc)
 export(ols_matrix_calc)
