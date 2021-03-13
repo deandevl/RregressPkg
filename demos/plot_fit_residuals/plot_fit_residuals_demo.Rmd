@@ -1,0 +1,64 @@
+---
+title: "Demo of RregressPkg::plot_fit_residuals()"
+output: 
+   html_document:
+    toc: yes
+    toc_depth: 3
+params:
+  date: !r Sys.Date()    
+---
+
+```{r,setup, include=FALSE, eval=TRUE}
+options(knitr.table.format = "html", width = 140)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.width = 12, fig.height = 8)
+```
+
+
+```{r, warning=FALSE, message=FALSE}
+library(knitr)
+library(kableExtra)
+library(data.table)
+library(RregressPkg)
+library(RplotterPkg)
+library(wooldridge)
+```
+
+## An example plot
+
+The following example is from the text "Introductory Econometrics" Section 8-3 page 250 by Jeffrey Wooldridge.  From a Breusch-Pagan Test for heteroskedasticity, the example rejects the null hypothesis of homoskedasticity.
+
+### Set up the data
+```{r}
+data("hprice1", package = "wooldridge")
+hprice1_dt <- data.table::setDT(hprice1)
+hprice1_dt <- hprice1_dt[,.(price, lotsize, sqrft, bdrms)]
+```
+
+### Define the OLS model formuula object
+```{r}
+formula_obj <-  price ~ lotsize + sqrft + bdrms
+```
+
+### Plot the fit versus the residuals
+```{r, fig.width=12, fig.height=8}
+RregressPkg::plot_fit_residuals(
+  df = hprice1_dt,
+  formula_obj = formula_obj,
+  label_threshold = 100
+)
+```
+
+### Re-plot after using the log of the response variable.
+
+The text indicates that by taking the logarithmic form of the response/predictor variables, the heteroskedasticity is reduced. 
+
+```{r, fig.width=12, fig.height=8}
+formula_obj <-  log(price) ~ log(lotsize) + log(sqrft) + bdrms
+RregressPkg::plot_fit_residuals(
+  df = hprice1_dt,
+  formula_obj = formula_obj,
+  label_threshold = 0.4
+)
+```
+
+

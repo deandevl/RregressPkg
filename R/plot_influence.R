@@ -1,15 +1,13 @@
 #' Function performs measures of influence to the submitted OLS model
 #'
 #' @description Function offers three different measures of influence including
-#'  internal/external studentized residuals, difference in fits, and Cook's distance.
+#'  internal/external studentized residuals, and Cook's distance.
 #'  Both a data frame and a plot of each observations influence on the OLS estimate are
 #'  returned to help identify data points as possible outliers and/or high leverage.
 #'
 #' @param df A data frame with columns for observed response and predictors
 #' @param formula_obj A formula object following the rules of \code{stats::lm()} construction.
 #'  For example: y ~ log(a) + b + I(b^2) or suppress the constant with \code{0} in the formula.
-#' @param obser_limit An integer that sets the maximum number of observations to be considered.
-#'  The default is 500.
 #' @param id_col An optional argument that names the column from data frame \code{x} providing
 #'  each observation with a unique identification value.  If this argument is NULL then
 #'  data frame row numbers are used for identification. Unless you have less than 30 observations,
@@ -58,7 +56,7 @@
 plot_influence <- function(
   df = NULL,
   formula_obj = NULL,
-  obser_limit = 500,
+ # obser_limit = 500,
   id_col = NULL,
   influence_meas = "cook",
   label_threshold = 3,
@@ -86,51 +84,45 @@ plot_influence <- function(
   do_y_title = TRUE
 ){
 
-  X <- stats::model.matrix(formula_obj, data = df)
-  Y_df <- subset(stats::model.frame(formula_obj, data = df),select = 1)
-
-  ols <- RregressPkg::ols_matrix_calc(X = X, Y = Y_df)
+  ols <- RregressPkg::ols_calc(df = df, formula_obj = formula_obj)
 
   influence_vals <- NULL
+  Hat_ii <- diag(ols$hat_mt)
 
   if(influence_meas == "internal"){
     # compute studentized residuals or internally studentized residuals
-    Hat_ii <- diag(ols$Hat)
-    influence_vals <- ols$Resid / sqrt(ols$mse * (1 - Hat_ii))
+    influence_vals <- ols$residual_vals / sqrt(ols$mse * (1 - Hat_ii))
   }else if(influence_meas == "external"){
     # compute the studentized deleted residuals or externally studentized residuals
-    Hat_ii <- diag(ols$Hat)
-    student_residuals <- ols$Resid / sqrt(ols$mse * (1 - Hat_ii))
-    p <- ols$k + 1
-    numer <- ols$n - p - 1
-    denom <- ols$n - p - student_residuals^2
+    student_residuals <- ols$residual_vals / sqrt(ols$mse * (1 - Hat_ii))
+    numer <- ols$n - ols$k - 1
+    denom <- ols$n - ols$k - student_residuals^2
     influence_vals <- student_residuals * sqrt(numer/denom)
   }else if(influence_meas == "dffits"){
     # compute the Difference in Fits(DFFITS)
-    n <- ols$n
-    if(n > obser_limit){
-      n <- obser_limit
-    }
-    Hat_ii <- diag(ols$Hat)
-    influence_vals <- vector(mode="numeric", length = n)
-    Inter_v <- c(Inter = 1)
-    X_I <- cbind(Inter_v,ols$X)
-    for(i in 1:n){
-      X_i <- ols$X[-i,,drop=F]
-      Y_i <- ols$Y[-i,,drop=F]
-      ols_i <- RregressPkg::ols_matrix_calc(X_i,Y_i)
-      Fitted_i <- X_I %*% ols_i$Coef
-      Dif <- ols$Fitted_val - Fitted_i
-      Denom <- sqrt(ols_i$mse * Hat_ii)
-      influence_vals[[i]] <- (Dif/Denom)[i,]
-    }
+    # n <- ols$n
+    # if(n > obser_limit){
+    #   n <- obser_limit
+    # }
+    # Hat_ii <- diag(ols$Hat)
+    # influence_vals <- vector(mode="numeric", length = n)
+    # Inter_v <- c(Inter = 1)
+    # X_I <- cbind(Inter_v,ols$X)
+    # for(i in 1:n){
+    #   X_i <- ols$X[-i,,drop=F]
+    #   Y_i <- ols$Y[-i,,drop=F]
+    #   ols_i <- RregressPkg::ols_matrix_calc(X_i,Y_i)
+    #   Fitted_i <- X_I %*% ols_i$Coef
+    #   Dif <- ols$Fitted_val - Fitted_i
+    #   Denom <- sqrt(ols_i$mse * Hat_ii)
+    #   influence_vals[[i]] <- (Dif/Denom)[i,]
+    # }
   }else if(influence_meas == "cook"){
     # compute Cook's distance measure
-    p <- ols$k + 1
+    Y_mt <- as.matrix(subset(stats::model.frame(formula_obj, data = df),select = 1))
     influence_vals <- vector(mode="numeric", length = ols$n)
-    Hat_ii <- diag(ols$Hat)
     for(i in 1:ols$n){
-      Residual <- ((ols$Y - ols$Fitted_val)^2)/(p * ols$mse)
+      Residual <- ((Y_mt - ols$fitted_vals)^2)/(ols$k * ols$mse)
       Leverage <- Hat_ii/(1 - Hat_ii)^2
       influence_vals[[i]] <- (Residual * Leverage)[i,]
     }

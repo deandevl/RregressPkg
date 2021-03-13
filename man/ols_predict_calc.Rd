@@ -7,7 +7,7 @@
 ols_predict_calc(
   df = NULL,
   formula_obj = NULL,
-  predictors_df = NULL,
+  predictor_vals_df = NULL,
   interval = "confidence",
   confid_level = 0.95
 )
@@ -18,7 +18,8 @@ ols_predict_calc(
 \item{formula_obj}{A formula object following the rules of \code{stats::lm()} construction.
 For example: y ~ log(a) + b + I(b^2) or suppress the constant with \code{0} in the formula}
 
-\item{predictors_df}{A data frame of predictor value constants to use for estimating the responses.}
+\item{predictor_vals_df}{A data frame of target predictor values to use for estimating the responses
+and associated confidence intervals.}
 
 \item{interval}{A string that sets the type of confidence interval.  Acceptable values
 are dQuote{confidence} or dQuote{prediction}.}
@@ -33,8 +34,8 @@ the standard errors used in the CI estimation.
 }
 \description{
 The function requires a data frame with columns for observed response and predictors,
-a formula object (class = dQuote{formula}), and a data frame of predictor constants. From the
-predictor constants estimates of the response are calculated along with their corresponding
+a formula object (class = dQuote{formula}), and a data frame of target predictor values. From the
+predictor values estimates of the response are calculated along with their corresponding
 "confidence" or "prediction" intervals.
 }
 \author{

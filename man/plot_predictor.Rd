@@ -7,7 +7,7 @@
 plot_predictor(
   df = NULL,
   formula_obj = NULL,
-  predictor_df = NULL,
+  predictor_vals_df = NULL,
   interval = "confidence",
   confid_level = 0.95,
   CI_show = T,
@@ -43,10 +43,10 @@ plot_predictor(
 \item{df}{A data frame with columns for observed response and predictors}
 
 \item{formula_obj}{A formula object following the rules of \code{stats::lm()} construction.
-For example: y ~ log(a) + b + I(b^2) or suppress the constant with \code{0} in the formula}
+For example: y ~ log(a) + b + I(b^2) or suppress the constant with \code{0} in the formula.}
 
-\item{predictor_df}{A numeric data frame that sets the values of interest for the target predictor.
-The column name should be the same as referenced in \code{formula_obj}.}
+\item{predictor_vals_df}{A single column data frame with values for a single predictor
+where its effect is of interest.}
 
 \item{interval}{A string that sets the type of confidence interval.  Acceptable values
 are dQuote{confidence} or dQuote{prediction}.}
@@ -114,8 +114,8 @@ dashed, blank} if \code{connect} is TRUE.}
 \item{do_y_title}{A logical that controls the appearance of the y axis title.}
 }
 \value{
-Function returns a list with the predictor,response, confidence intervals \dQuote{response}
-along with a ggplot2 object dQuote{plot}.
+Function returns a list with the predictor's effect response values and associated confidence intervals
+along with a ggplot2 object.
 }
 \description{
 Function holds other predictor variables at their mean value and plots

@@ -4,16 +4,29 @@
 \alias{ols_calc}
 \title{Function computes linear OLS regression parameter estimates}
 \usage{
-ols_calc(df = NULL, formula_obj = NULL, na_omit = FALSE)
+ols_calc(
+  df = NULL,
+  X_mt = NULL,
+  Y_mt = NULL,
+  formula_obj = NULL,
+  confid_level = 0.95,
+  na_omit = FALSE
+)
 }
 \arguments{
-\item{df}{A data frame with columns for observed response and predictors}
+\item{df}{A data frame with columns for observed response and predictors.}
+
+\item{X_mt}{A matrix of predictor values as an alternative to \code{df}.}
+
+\item{Y_mt}{A single column matrix of response values as an alternative to \code{df}.}
 
 \item{formula_obj}{A formula object following the rules of \code{stats::lm()} construction.
 For example: y ~ log(a) + b + I(b^2) or suppress the constant with \code{0} in the formula.}
 
-\item{na_omit}{A logical which if TRUE will omit rows that have NA values. If the
-data contains NA's then the correlation matrix will not be computed.}
+\item{confid_level}{A numeric that defines the confidence level for estimating confidence
+intervals. The default is 0.95.}
+
+\item{na_omit}{A logical which if TRUE will omit rows that have NA values.}
 }
 \value{
 Returning a named list of data frames with OLS coefficient estimates, residual
@@ -22,6 +35,8 @@ statistics, ANOVA of the regression along with residuals, fitted values, and R^2
 \description{
 The function requires a data frame with columns for observed response and predictors,
 and a formula object (class = dQuote{formula}) that describes the OLS model of interest.
+Alternatively, the function will accept a matrix \code{X} and one column matrix \code{Y} for the
+predictor and response values respectively.
 }
 \author{
 Rick Dean

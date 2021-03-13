@@ -1,0 +1,112 @@
+---
+title: "Demo for RegressPkg::ols_predict_calc()"
+output: 
+   html_document:
+    toc: yes
+    toc_depth: 3
+params:
+  date: !r Sys.Date()    
+---
+
+```{r,setup, include=FALSE, eval=TRUE}
+options(knitr.table.format = "html", width = 140)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.width = 12, fig.height = 8)
+```
+
+
+```{r, warning=FALSE, message=FALSE}
+library(knitr)
+library(kableExtra)
+library(data.table)
+library(RregressPkg)
+library(RplotterPkg)
+library(wooldridge)
+```
+
+The following example concerns estimating both confidence and prediction intervals for College GPA.
+
+The source is from "Using R for Introductory Econometrics" by Florian Heiss, Section 6.2 page 130.
+
+Also, "Introductory Econometrics" by Jeffery Wooldridge, Section 6.4, page 186.
+
+## Confidence intervals for predictor points
+
+Set the *interval* argument of `RregressPkg::ols_predict_calc()` to "confidence". 
+
+### Set up the data
+```{r}
+data("gpa2", package = "wooldridge")
+gpa2_dt <- data.table::setDT(gpa2)
+gpa2_dt <- gpa2_dt[, .(colgpa, sat, hsperc, hsize)]
+```
+
+### Define the OLS formula and set target predictor values
+```{r}
+formula_obj <- colgpa ~ sat + hsperc + hsize + I(hsize^2)
+predictor_vals_df <- data.frame(
+  sat = 1200,
+  hsperc = 30,
+  hsize = 5
+)
+```
+
+### Call RregressPkg::ols_predict_calc()  
+Using the 95% confidence interval by default.
+```{r}
+confidence_df <- RregressPkg::ols_predict_calc(
+  df = gpa2_dt,
+  formula_obj = formula_obj,
+  predictor_vals_df = predictor_vals_df
+)
+```
+
+### Call RregressPkg::ols_predict_calc() for a set of predictor values
+Using the 99% confidence interval.
+```{r}
+predictor_vals_df <- data.frame(
+  sat = c(1200, 900, 1400),
+  hsperc = c(30, 20, 5),
+  hsize = c(5, 3, 1)
+)
+confidence_df <- RregressPkg::ols_predict_calc(
+  df = gpa2_dt,
+  formula_obj = formula_obj,
+  confid_level = 0.99,
+  predictor_vals_df = predictor_vals_df
+)
+```
+
+### Show the fit and confidence interval values
+```{r}
+RplotterPkg::create_table(
+  x = confidence_df,
+  caption = "Confidence intervals for College GPA Predictors"
+)
+```
+
+
+## Prediction intervals for predictor points
+
+### Call RregressPkg::ols_predict_calc() with "prediction" interval
+Using the 95% confidence level by default. 
+```{r}
+predictor_vals_df <- data.frame(
+  sat = c(1200, 900, 1400),
+  hsperc = c(30, 20, 5),
+  hsize = c(5, 3, 1)
+)
+prediction_df <- RregressPkg::ols_predict_calc(
+  df = gpa2_dt,
+  formula_obj = formula_obj,
+  interval = "prediction",
+  predictor_vals_df = predictor_vals_df
+)
+```
+
+### Show the fit and confidence interval values
+```{r}
+RplotterPkg::create_table(
+  x = prediction_df,
+  caption = "Prediction intervals for College GPA Predictors"
+)
+```

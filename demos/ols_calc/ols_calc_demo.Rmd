@@ -1,5 +1,5 @@
 ---
-title: "Demo for RregressPkg::ols_calc"
+title: "Demo for RregressPkg::ols_calc()"
 author: "Rick Dean"
 date: "2/12/2021"
 output: html_document
@@ -21,26 +21,25 @@ data_dir <- file.path(current_dir, "demos/data")
 ```
 
 
-## Multiple Regression College GPA: colGPA ~ hsGPA + ACT + skipped
+## Multiple Regression -- College GPA 
 
- colGPA College GPA;  hsGPA: High School GPA;  ACT: ACT score; skipped: days skipped
- Source: "Using R for Introductory Econometrics" by Florian Heiss, page 105
- Also: "Introductory Econometrics, A Modern Approach, 6th edition" by Jeffery Wooldridge, page 115
+LM Formula: colGPA ~ hsGPA + ACT + skipped
+ 
+Source: "Using R for Introductory Econometrics" by Florian Heiss, Section 4.1 page 105
+ 
+Also: "Introductory Econometrics, A Modern Approach, 6th edition" by Jeffery Wooldridge, Section 4.2 page 115
  
 ### Set up the data
 ```{r}
 data("gpa1", package = "wooldridge")
-gpa1_df <- data.frame(
-  colGPA = gpa1$colGPA,
-  hsGPA = gpa1$hsGPA,
-  ACT = gpa1$ACT,
-  skipped = gpa1$skipped
-)
+
+gpa1_dt <- data.table::setDT(gpa1)
+gpa1_dt <- gpa1_dt[, .(colGPA, hsGPA, ACT, skipped)]
 ```
 ### Run `RregressPkg::ols_calc()`
 ```{r}
 gpa1_ols_ls <- RregressPkg::ols_calc(
-  df = gpa1_df,
+  df = gpa1_dt,
   formula_obj = colGPA ~ hsGPA + ACT + skipped
 )
 ```
@@ -53,43 +52,74 @@ RplotterPkg::create_table(
 )
 ```
 
+### Show the F statistic
+```{r}
+RplotterPkg::create_table(
+  x = gpa1_ols_ls$F_df,
+  caption = "F-statistic for colGPA ~ hsGPA + ACT + skipped",
+  full_width = T,
+  align_v = c("l","c","c","c","c")
+)
+```
+
+
+### Run stats::lm() for comparison
+```{r}
+gpa1_lm <- stats::lm(colGPA ~ hsGPA + ACT + skipped, data = gpa1_dt)
+summary(gpa1_lm)
+```
+
 ### Show sum of the squares
 ```{r}
 RplotterPkg::create_table(
   x = gpa1_ols_ls$anova_df,
-  caption = "SS: colGPA ~ hsGPA + ACT + skipped"
+  caption = "SS: colGPA ~ hsGPA + ACT + skipped",
+  full_width = T,
+  align_v = c("l","c","c","c")
 )
 ```
 
-## Multiple Regression Blood Pressure: BP ~ age + weight + bsa + dur + pulse + stress
+## Multiple Regression -- R & D Expenditures
 
-Check correlations among all variables - predictors and response
-Source: PennState Stat 501 Eberly College of Science, Section 12.1, Example 12.1
+LM Formula: log(rd) ~ log(sales) + profmarg
+
+Source: "Using R for Introductory Econometrics" by Florian Heiss, Section 4.2 page 108
+
+Also: "Introductory Econometrics, A Modern Approach, 6th edition" by Jeffery Wooldridge, Section 4.3 page 123
 
 ### Set up the data
 ```{r}
-data_path <- file.path(data_dir, "bloodpress.txt")
-bloodpress_dt <- data.table::fread(data_path)
-bloodpress_dt <- bloodpress_dt[, !c("Pt")]
+data("rdchem", package = "wooldridge")
+
+rdchem_dt <- data.table::setDT(rdchem)
+rdchem_dt <- rdchem_dt[, .(rd, sales, profmarg)]
 ```
 
 ### Run `RregressPkg::ols_calc()`
 ```{r}
-bloodpress_ols_ls <- RregressPkg::ols_calc(
-  df = bloodpress_dt,
-  formula_obj = BP ~ Age + Weight + BSA + Dur + Pulse + Stress
+rdchem_ols_ls <- RregressPkg::ols_calc(
+  df = rdchem_dt,
+  formula_obj = log(rd) ~ log(sales) + profmarg
 )
 ```
 
-### Show the correlations among the variables
+### Show the coefficient data frame
 ```{r}
 RplotterPkg::create_table(
-  x = bloodpress_ols_ls$corr_df,
-  caption = "BP ~ Age + Weight + BSA + Dur + Pulse + Stress"
+  x = rdchem_ols_ls$coef_df,
+  caption = "MLR for log(rd) ~ log(sales) + profmarg"
 )
 ```
 
-
+### Show the coefficient's confidence intervals
+```{r}
+RplotterPkg::create_table(
+  x = rdchem_ols_ls$coef_CI_df,
+  caption = "Coefficient 95% Confidence Intervals",
+  full_width = T,
+  align_v = c("l","c","c")
+)
+```
 
 
 

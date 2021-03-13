@@ -1,13 +1,13 @@
-#' Function creates a scatter plot of the OLS fitted versus residual values for observations.
+#' Function creates a scatter plot of the OLS fitted versus residual values.
 #'
-#' @description The fitted values are along the x axis and the residuals are along the y axis.
-#'  Function returns a ggplot2 object which can be further modified. The input consist of
-#'  a data frame of observations containing columns for the response variable and predictor variables.
-#'
-#' @param data_df A data frame containing values for both the observed predictors
-#'  and response variable.
-#' @param resp_str A string that names the column in \code{data_df} containing the response
-#'  variable.
+#' @description Function returns a ggplot2 scatter plot object which can be further modified.
+#' @param df A data frame containing values for both the predictor values and the associated
+#'  response variable.
+#' @param formula_obj A formula object following the rules of \code{stats::lm()} construction.
+#'  For example: y ~ log(a) + b + I(b^2) or suppress the constant with \code{0} in the formula.
+#' @param id_col An optional argument that names the column from data frame \code{df} providing
+#'  each observation with a unique identification value.  If this argument is NULL then
+#'  data frame row numbers are used for identification.
 #' @param label_threshold A numeric that sets the residual threshold beyond which observations
 #'  will be labeled with their id.
 #' @param label_color A string that sets the label/point color for observations whose absolute
@@ -53,16 +53,17 @@
 #' @importFrom RplotterPkg create_scatter_plot
 #' @importFrom ggplot2 geom_hline
 #' @importFrom ggplot2 geom_line
+#' @importFrom ggrepel geom_text_repel
 #'
-#' @return Function returns a named list with OLS estimates and
-#'  a ggplot2 object of fitted vs residual values.
+#' @return Function returns a ggplot2 object of fitted vs residual values.
 #'
 #' @author Rick Dean
 #'
 #' @export
 plot_fit_residuals <- function(
-  data_df = NULL,
-  resp_str = NULL,
+  df = NULL,
+  formula_obj = NULL,
+  id_col = NULL,
   label_threshold = NULL,
   label_color = "red",
   title = NULL,
@@ -97,23 +98,28 @@ plot_fit_residuals <- function(
   do_x_title = TRUE,
   do_y_title = TRUE
 ){
-  ols_regress_lst <- RregressPkg::ols_regress_calc(
-    data_df = data_df,
-    dep_str = resp_str
+
+  ols_lst <- RregressPkg::ols_calc(
+    df = df,
+    formula_obj = formula_obj
   )
 
-  fit_residuals <- ols_regress_lst$resid
+  if(!is.null(id_col)){
+    id_v <- df[[id_col]]
+  }else {
+    id_v <- 1: nrow(df)
+  }
 
-  dt <- data.table::data.table(
-    row_number = rownames(data_df),
-    fit_values = ols_regress_lst$fitted_val,
-    fit_residuals = fit_residuals
+  plot_dt <- data.table (
+    id = id_v,
+    fit = ols_lst$fitted_vals,
+    residuals = ols_lst$residual_vals
   )
 
   fit_residual_plot <- RplotterPkg::create_scatter_plot(
-    df = dt,
-    aes_x = "fit_values",
-    aes_y = "fit_residuals",
+    df = plot_dt,
+    aes_x = "fit",
+    aes_y = "residuals",
     title = title,
     subtitle = subtitle,
     x_title = x_title,
@@ -145,22 +151,17 @@ plot_fit_residuals <- function(
     ggplot2::geom_hline(yintercept = 0, color = zero_line_color, size = zero_line_size)
 
   if(!is.null(label_threshold)){
-    label_data <- dt[abs(fit_residuals) >= label_threshold]
+    label_data <- plot_dt[abs(residuals) >= label_threshold]
     fit_residual_plot <- fit_residual_plot +
       ggplot2::geom_point(data = label_data, color = label_color, size = 2.5) +
-      ggrepel::geom_text_repel(data = label_data, aes(label = row_number), color = label_color)
+      ggrepel::geom_text_repel(data = label_data, aes(label = id), color = label_color)
   }
 
   if(trend_line){
-    trend_model <- stats::loess(fit_residuals ~ fit_values, data = dt)
+    trend_model <- stats::loess(residuals ~ fit, data = plot_dt)
     fit_residual_plot <- fit_residual_plot +
       ggplot2::geom_line(aes(x = trend_model$x, y = trend_model$fitted), color = trend_line_color, size = trend_line_size)
   }
 
-  return(
-    list(
-      ols = ols_regress_lst,
-      plot = fit_residual_plot
-    )
-  )
+  return(plot = fit_residual_plot)
 }

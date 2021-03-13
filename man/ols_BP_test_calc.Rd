@@ -16,7 +16,8 @@ For example: y ~ log(a) + b + I(b^2) or suppress the constant with \code{0} in t
 Returning a data frame of F and LM and their p-values
 }
 \description{
-Performs the BP-test from submitted lm formula and data frame.
+Performs the BP-test from submitted lm formula and data frame. Function
+implements both the F and LM versions of the BP test.
 }
 \author{
 Rick Dean

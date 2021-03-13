@@ -10,7 +10,7 @@ ols_F_calc(
   df = NULL,
   ur_formula_obj = NULL,
   r_formula_obj = NULL,
-  f_prob = 0.99
+  confid_level = 0.95
 )
 }
 \arguments{
@@ -21,15 +21,17 @@ For example: y ~ log(a) + b + I(b^2) or suppress the constant with \code{0} in t
 
 \item{r_formula_obj}{The restricted formula object following the rules of \code{stats::lm()} construction.}
 
-\item{f_prob}{A numeric that sets the F probability for computing the
+\item{confid_level}{A numeric that sets the confidence level for computing the
 critical value.}
 }
 \value{
-Returns a data frame with the computed F value and associated p value along
-with sums of the squares for each model.
+Returns a named list with a data frame of computed F statistics along
+with OLS coefficient estimates for each model.
 }
 \description{
-
+Given formulas for the the unrestricted and restricted OLS models,
+function returns a data frame with the computed F-statistic along with OLS coefficient
+estimates for both models.
 }
 \author{
 Rick Dean

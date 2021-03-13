@@ -2,11 +2,12 @@
 % Please edit documentation in R/plot_fit_residuals.R
 \name{plot_fit_residuals}
 \alias{plot_fit_residuals}
-\title{Function creates a scatter plot of the OLS fitted versus residual values for observations.}
+\title{Function creates a scatter plot of the OLS fitted versus residual values.}
 \usage{
 plot_fit_residuals(
-  data_df = NULL,
-  resp_str = NULL,
+  df = NULL,
+  formula_obj = NULL,
+  id_col = NULL,
   label_threshold = NULL,
   label_color = "red",
   title = NULL,
@@ -43,11 +44,15 @@ plot_fit_residuals(
 )
 }
 \arguments{
-\item{data_df}{A data frame containing values for both the observed predictors
-and response variable.}
+\item{df}{A data frame containing values for both the predictor values and the associated
+response variable.}
 
-\item{resp_str}{A string that names the column in \code{data_df} containing the response
-variable.}
+\item{formula_obj}{A formula object following the rules of \code{stats::lm()} construction.
+For example: y ~ log(a) + b + I(b^2) or suppress the constant with \code{0} in the formula.}
+
+\item{id_col}{An optional argument that names the column from data frame \code{df} providing
+each observation with a unique identification value.  If this argument is NULL then
+data frame row numbers are used for identification.}
 
 \item{label_threshold}{A numeric that sets the residual threshold beyond which observations
 will be labeled with their id.}
@@ -123,13 +128,10 @@ Use \code{NA} to refer to the existing minimum and maximum.}
 \item{do_y_title}{A logical that controls the appearance of the y axis title.}
 }
 \value{
-Function returns a named list with OLS estimates and
-a ggplot2 object of fitted vs residual values.
+Function returns a ggplot2 object of fitted vs residual values.
 }
 \description{
-The fitted values are along the x axis and the residuals are along the y axis.
-Function returns a ggplot2 object which can be further modified. The input consist of
-a data frame of observations containing columns for the response variable and predictor variables.
+Function returns a ggplot2 scatter plot object which can be further modified.
 }
 \author{
 Rick Dean

@@ -7,7 +7,6 @@
 plot_influence(
   df = NULL,
   formula_obj = NULL,
-  obser_limit = 500,
   id_col = NULL,
   influence_meas = "cook",
   label_threshold = 3,
@@ -40,9 +39,6 @@ plot_influence(
 
 \item{formula_obj}{A formula object following the rules of \code{stats::lm()} construction.
 For example: y ~ log(a) + b + I(b^2) or suppress the constant with \code{0} in the formula.}
-
-\item{obser_limit}{An integer that sets the maximum number of observations to be considered.
-The default is 500.}
 
 \item{id_col}{An optional argument that names the column from data frame \code{x} providing
 each observation with a unique identification value.  If this argument is NULL then
@@ -111,7 +107,7 @@ influence measure \dQuote{influence_plot}.
 }
 \description{
 Function offers three different measures of influence including
-internal/external studentized residuals, difference in fits, and Cook's distance.
+internal/external studentized residuals, and Cook's distance.
 Both a data frame and a plot of each observations influence on the OLS estimate are
 returned to help identify data points as possible outliers and/or high leverage.
 }

@@ -7,9 +7,9 @@
 #'
 #' @param df A data frame with columns for observed response and predictors
 #' @param formula_obj A formula object following the rules of \code{stats::lm()} construction.
-#'  For example: y ~ log(a) + b + I(b^2) or suppress the constant with \code{0} in the formula
-#' @param predictor_df A numeric data frame that sets the values of interest for the target predictor.
-#'  The column name should be the same as referenced in \code{formula_obj}.
+#'  For example: y ~ log(a) + b + I(b^2) or suppress the constant with \code{0} in the formula.
+#' @param predictor_vals_df A single column data frame with values for a single predictor
+#'  where its effect is of interest.
 #' @param interval A string that sets the type of confidence interval.  Acceptable values
 #'  are dQuote{confidence} or dQuote{prediction}.
 #' @param confid_level A numeric that defines the confidence level for estimating confidence
@@ -52,8 +52,8 @@
 #' @importFrom RplotterPkg create_scatter_plot
 #' @import ggplot2
 #'
-#' @return Function returns a list with the predictor,response, confidence intervals \dQuote{response}
-#' along with a ggplot2 object dQuote{plot}.
+#' @return Function returns a list with the predictor's effect response values and associated confidence intervals
+#' along with a ggplot2 object.
 #'
 #' @author Rick Dean
 #'
@@ -61,7 +61,7 @@
 plot_predictor <- function(
   df = NULL,
   formula_obj = NULL,
-  predictor_df = NULL,
+  predictor_vals_df = NULL,
   interval = "confidence",
   confid_level = 0.95,
   CI_show = T,
@@ -92,28 +92,29 @@ plot_predictor <- function(
   do_x_title = T,
   do_y_title = T
 ){
-  data_dt <- data.table::setDT(df)
+  dt <- data.table::setDT(df)
 
   variables <- all.vars(terms(formula_obj, data = df))
   response_name <- variables[[1]]
-  predictor_name <- colnames(predictor_df)
+  predictor_name <- colnames(predictor_vals_df)
 
   out_vars <- c(response_name, predictor_name)
-  X_dt <- data_dt[, !..out_vars]
+  X_dt <- dt[, !..out_vars]
   X_means_dt <- X_dt[,lapply(X_dt,mean)]
-  predictors_df <- cbind(predictor_df, X_means_dt)
+  predictor_vals_df <- cbind(predictor_vals_df, X_means_dt)
 
-  responses_df <- RregressPkg::ols_predict_calc(
+  confidence_df <- RregressPkg::ols_predict_calc(
     df = df,
     formula_obj = formula_obj,
-    predictors_df = predictors_df,
+    predictor_vals_df = predictor_vals_df,
     interval = interval,
     confid_level = confid_level
   )
-  response_dt <- cbind(predictors_df, responses_df)
 
-  response_plot <- RplotterPkg::create_scatter_plot(
-    df = response_dt,
+  predictor_effect_df <- cbind(predictor_vals_df, confidence_df)
+
+  effect_plot <- RplotterPkg::create_scatter_plot(
+    df = predictor_effect_df,
     aes_x = predictor_name,
     aes_y = "fit",
     title = title,
@@ -143,12 +144,12 @@ plot_predictor <- function(
   )
 
   if(CI_show){
-    response_plot <- response_plot +
+    effect_plot <- effect_plot +
       geom_ribbon(aes(ymin = lwr, ymax = upr), fill = CI_fill, alpha = CI_alpha)
   }
 
   return(list(
-    plot = response_plot,
-    response = response_dt
+    effect_plot = effect_plot,
+    predictor_effect_df = predictor_effect_df
   ))
 }

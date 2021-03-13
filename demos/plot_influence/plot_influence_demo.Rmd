@@ -1,0 +1,119 @@
+---
+title: "Demo of RregressPkg::plot_influence()"
+output: 
+   html_document:
+    toc: yes
+    toc_depth: 3
+params:
+  date: !r Sys.Date()    
+---
+
+```{r,setup, include=FALSE, eval=TRUE}
+options(knitr.table.format = "html", width = 140)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.width = 12, fig.height = 8)
+```
+
+```{r, warning=FALSE, message=FALSE}
+library(knitr)
+library(kableExtra)
+library(data.table)
+library(RregressPkg)
+library(RplotterPkg)
+library(wooldridge)
+library(here)
+
+current_dir <- here::here()
+data_dir <- file.path(current_dir, "demos/data")
+```
+
+## Single/Simple Linear Regression
+Source of the data: PennState Science (https://online.stat.psu.edu/stat501/lesson/11/11.4)
+Example 11-2 Revisited
+
+### Set up the data
+```{r}
+data_path <- file.path(data_dir, "influence2.txt")
+influence2_data_dt <- data.table::fread(data_path)
+influence2_x_y_dt <- influence2_data_dt[, .(x, y)]
+influence2_x_y_dt[, id := lapply(1:nrow(influence2_data_dt), function(i){paste0("ob_",i)})]
+```
+
+### Compute and plot the internal studentized residual
+```{r, fig.width=12, fig.height=8}
+internal_studentized_lst <- RregressPkg::plot_influence(
+  df = influence2_x_y_dt,
+  formula_obj = y ~ x,
+  id_col = "id",
+  influence_meas = "internal",
+  label_threshold = 3.00,
+  title = "Internal Studentized Influence Measure",
+  subtitle = "Obs 21 internal studentized residual = 3.68; Source: PennState Science",
+  rot_y_tic_label = T
+)
+internal_studentized_lst$plot
+```
+
+Observation 21 has an internal studentized residual of 3.68 and is labeled on the plot.
+
+### Compute and plot the external studentized residual
+```{r, fig.width=12, fig.height=8}
+external_studentized_lst <- RregressPkg::plot_influence(
+  df = influence2_x_y_dt,
+  formula_obj = y ~ x,
+  id_col = "id",
+  influence_meas = "external",
+  label_threshold = 3.00,
+  title = "External Studentized Influence Measure",
+  subtitle = "Obs 21 external studentized residual = 6.69; Source: PennState Science",
+  rot_y_tic_label = T
+)
+external_studentized_lst$plot
+```
+
+Observation 21 has a external studentized residual of 6.69 and is labeled on the plot.
+
+### Compute and plot Cook's Distance
+```{r, fig.width=12, fig.height=8}
+cook_lst <- RregressPkg::plot_influence(
+  df = influence2_x_y_dt,
+  formula_obj = y ~ x,
+  id_col = "id",
+  influence_meas = "cook",
+  label_threshold = 0.30,
+  title = "Cook's Distance Influence Measure",
+  subtitle = "Obs 21 Cook's Distance = 0.36; Source: PennState Science",
+  rot_y_tic_label = T
+)
+cook_lst$plot
+```
+
+Observation 21 has a Cook's Distance influence of 0.36 and is labeled on the plot.
+
+## Multiple linear regression
+
+Source of the data: "Introductory Econometrics" by Jeffrey Wooldridge, Section 9-5, page 297
+
+### Set up the data
+```{r}
+data("rdchem",package = "wooldridge")
+rdchem_dt <- data.table::setDT(rdchem)
+rdchem_dt <- rdchem_dt[, .(rdintens, sales, profmarg)]
+```
+
+### Compute and plot Cook's Distance
+```{r, fig.width=12, fig.height=8}
+formula_obj <- rdintens ~ sales + profmarg
+rdchem_influence_lst <- RregressPkg::plot_influence(
+  df = rdchem_dt,
+  formula_obj = formula_obj,
+  influence_meas = "cook",
+  label_threshold = 3.0,
+  title = "Cook's Distance for Data Point Influence",
+  subtitle = "Source: Wooldridge::rdchem",
+  rot_y_tic_label = T
+)
+rdchem_influence_lst$plot
+```
+
+Observation 10 has a Cook's Distance influence of 3.13 and is labeled on the plot.
+
