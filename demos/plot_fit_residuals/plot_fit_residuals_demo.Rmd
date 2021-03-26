@@ -21,9 +21,10 @@ library(data.table)
 library(RregressPkg)
 library(RplotterPkg)
 library(wooldridge)
+library(gamair)
 ```
 
-## An example plot
+## An example from "Introductory Econometrics"
 
 The following example is from the text "Introductory Econometrics" Section 8-3 page 250 by Jeffrey Wooldridge.  From a Breusch-Pagan Test for heteroskedasticity, the example rejects the null hypothesis of homoskedasticity.
 
@@ -44,7 +45,8 @@ formula_obj <-  price ~ lotsize + sqrft + bdrms
 RregressPkg::plot_fit_residuals(
   df = hprice1_dt,
   formula_obj = formula_obj,
-  label_threshold = 100
+  label_threshold = 100,
+  label_sd = 1.0
 )
 ```
 
@@ -57,8 +59,48 @@ formula_obj <-  log(price) ~ log(lotsize) + log(sqrft) + bdrms
 RregressPkg::plot_fit_residuals(
   df = hprice1_dt,
   formula_obj = formula_obj,
-  label_threshold = 0.4
+  label_threshold = 0.4,
+  label_sd = 1.0
 )
 ```
 
+## An example from "Generalized Additive Models"
+The following example is from the text "Generalized Additive Models", Section 1.5, page 22  by Simon Wood.
+
+### Set up the data
+```{r}
+data("sperm.comp1", package = "gamair")
+sperm1_dt <- data.table::setDT(sperm.comp1)
+data.table::setnames(sperm1_dt,c("time.ipc","prop.partner"), c("time_ipc","prop_partner"))
+```
+
+### Define the OLS model formula object
+```{r}
+formula_obj <- count ~ time_ipc + prop_partner
+```
+
+### Plot the fit versus the residuals
+```{r, fig.width=12, fig.height=8}
+RregressPkg::plot_fit_residuals(
+  df = sperm1_dt,
+  formula_obj = formula_obj,
+  label_threshold = 150,
+  pts_size = 2.5,
+  pts_fill = "green",
+  pts_color = "black"
+)
+```
+
+### Plot the fit versus the square root of the standardized residuals
+```{r, fig.width=12, fig.height=8}
+RregressPkg::plot_fit_residuals(
+  df = sperm1_dt,
+  formula_obj = formula_obj,
+  residual_standardized = TRUE,
+  label_threshold = 1.0,
+  pts_size = 2.5,
+  pts_fill = "green",
+  pts_color = "black"
+)
+```
 

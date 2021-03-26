@@ -1,0 +1,81 @@
+---
+title: "Demo of RregressPkg::plot_qq()"
+output: 
+   html_document:
+    toc: yes
+    toc_depth: 3
+params:
+  date: !r Sys.Date()    
+---
+
+```{r,setup, include=FALSE, eval=TRUE}
+options(knitr.table.format = "html", width = 140)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.width = 12, fig.height = 8)
+```
+
+```{r, warning=FALSE, message=FALSE}
+library(knitr)
+library(kableExtra)
+library(data.table)
+library(ggplot2)
+library(ggrepel)
+library(RplotterPkg)
+library(RregressPkg)
+library(car)
+```
+
+## QQ plot of random normal sample
+
+### Set the data 
+
+The random sample of 20 values has a mean of 10 and standard deviation of 3
+```{r}
+set.seed(20200825)
+sample_obs_df <- data.frame(
+  vals = stats::rnorm(20, 10, 3)
+)  
+# insert a large value
+sample_obs_df$vals[[3]] <-  -17
+```
+
+### Plot the QQ plot
+```{r, fig.width=12, fig.height=8}
+RregressPkg::plot_qq(
+  df = sample_obs_df,
+  numeric_col = "vals",
+  title = "QQ plot of Random Observations",
+  subtitle = "Sample is from a normal distribution",
+  x_title = "Theoretical Normal Quantiles",
+  y_title = "Sample Quantiles",
+  rot_y_tic_label = TRUE,
+  ci_lines_color = "blue",
+  ci_line_type = "dashed",
+  pts_size = 4,
+  labels_n = 3
+)
+```
+
+### Re-plot using `car::qqPlot()` for comparison
+```{r, fig.width=12, fig.height=8}
+plot_car <- car::qqPlot(sample_obs_df$vals)
+plot_car
+```
+
+### Re-plot with the standardized values
+```{r, fig.width=12, fig.height=8}
+RregressPkg::plot_qq(
+  df = sample_obs_df,
+  numeric_col = "vals",
+  standardize = TRUE,
+  title = "QQ plot of Random Observations",
+  subtitle = "Sample is from a normal distribution",
+  x_title = "Theoretical Normal Quantiles",
+  y_title = "Standardized Sample Quantiles",
+  rot_y_tic_label = TRUE,
+  ci_lines_color = "blue",
+  ci_line_type = "dashed",
+  pts_size = 4,
+  labels_n = 3
+)
+```
+

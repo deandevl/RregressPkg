@@ -58,6 +58,10 @@ confidence_df <- RregressPkg::ols_predict_calc(
   formula_obj = formula_obj,
   predictor_vals_df = predictor_vals_df
 )
+RplotterPkg::create_table(
+  x = confidence_df,
+  caption = "GPA 95% Confidence Interval"
+)
 ```
 
 ### Call RregressPkg::ols_predict_calc() for a set of predictor values
@@ -74,22 +78,38 @@ confidence_df <- RregressPkg::ols_predict_calc(
   confid_level = 0.99,
   predictor_vals_df = predictor_vals_df
 )
-```
-
-### Show the fit and confidence interval values
-```{r}
 RplotterPkg::create_table(
   x = confidence_df,
-  caption = "Confidence intervals for College GPA Predictors"
+  caption = "GPA 99% Confidence Intervals"
 )
 ```
 
-
 ## Prediction intervals for predictor points
 
-### Call RregressPkg::ols_predict_calc() with "prediction" interval
+### Prediction interval for one set of predictors
+```{r}
+formula_obj <- colgpa ~ sat + hsperc + hsize + I(hsize^2)
+predictor_vals_df <- data.frame(
+  sat = 1200,
+  hsperc = 30,
+  hsize = 5
+)
+prediction_df <- RregressPkg::ols_predict_calc(
+  df = gpa2_dt,
+  formula_obj = formula_obj,
+  predictor_vals_df = predictor_vals_df,
+  interval = "prediction"
+)
+RplotterPkg::create_table(
+  x = prediction_df,
+  caption = "GPA 95% Prediction Interval"
+)
+```
+
+### Call RregressPkg::ols_predict_calc() for a set of predictor values
 Using the 95% confidence level by default. 
 ```{r}
+formula_obj <- colgpa ~ sat + hsperc + hsize + I(hsize^2)
 predictor_vals_df <- data.frame(
   sat = c(1200, 900, 1400),
   hsperc = c(30, 20, 5),
@@ -101,12 +121,8 @@ prediction_df <- RregressPkg::ols_predict_calc(
   interval = "prediction",
   predictor_vals_df = predictor_vals_df
 )
-```
-
-### Show the fit and confidence interval values
-```{r}
 RplotterPkg::create_table(
   x = prediction_df,
-  caption = "Prediction intervals for College GPA Predictors"
+  caption = "GPA 95% Prediction Intervals"
 )
 ```

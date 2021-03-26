@@ -9,7 +9,6 @@ plot_matrix_scatter(
   title = NULL,
   rot_y_tic_label = FALSE,
   plot_dim = 8.5,
-  show_axis_titles = TRUE,
   display_plot = TRUE
 )
 }
@@ -23,8 +22,6 @@ matrix like fashion.}
 enhanced readability.}
 
 \item{plot_dim}{A numeric that sets the overall width/height of the plot in inches.}
-
-\item{show_axis_titles}{A logical which if TRUE will display the axis titles.}
 
 \item{display_plot}{A logical that if TRUE will display the plot}
 }

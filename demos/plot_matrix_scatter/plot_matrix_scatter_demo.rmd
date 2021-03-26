@@ -77,9 +77,8 @@ penguins_dt[,`:=`(Species = as.factor(fcase(Species == "Adelie","Ad",
 RregressPkg::plot_matrix_scatter(
   df = penguins_dt,
   title = "Palmer Penguins",
-  plot_dim = 12,
-  rot_y_tic_label = T,
-  show_axis_titles = F
+  plot_dim = 13,
+  rot_y_tic_label = T
 )
 ```
 

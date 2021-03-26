@@ -1,0 +1,189 @@
+---
+title: "Demo of RregressPkg::plot_replace_missing()"
+output: 
+   html_document:
+    toc: yes
+    toc_depth: 3
+params:
+  date: !r Sys.Date()    
+---
+
+```{r,setup, include=FALSE, eval=TRUE}
+options(knitr.table.format = "html", width = 140)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.width = 12, fig.height = 8)
+```
+
+```{r, warning=FALSE, message=FALSE}
+library(knitr)
+library(kableExtra)
+library(data.table)
+library(ggplot2)
+library(mlbench)
+library(dplyr)
+library(RregressPkg)
+library(RplotterPkg)
+```
+
+
+## Simple example
+
+1. Create the data.frame with NA's and NaN's and other values considered missing:
+```{r}
+set.seed(5648)
+df <- data.frame(
+  x = 1:20,
+  y = LETTERS[1:20],
+  z = rnorm(20, mean = 10, sd = 2.1)
+)
+df$x[1:2] <- NA
+df$x[[5]] <- 9999
+df$x[[8]] <- 1111
+df$x[12:15] <- NaN
+df$z[8:9] <- NaN
+df$z[18:19] <- NA
+```
+
+2. Show the counts of missing values:
+```{r}
+missing_lst <- RregressPkg::plot_replace_missing(
+  df = df,
+  variables = c("x", "z"),
+  miss_values = c(1111, 9999),
+  title = "Counts of Missing Values"
+)
+missing_lst$missing_plot
+```
+
+3. Replace missing values with the mean value for the variable:
+```{r}
+missing_lst <- RregressPkg::plot_replace_missing(
+  df = df,
+  variables = c("x", "z"),
+  miss_values = c(1111, 9999),
+  replace_fun = "median"
+)
+colnames(missing_lst$replacement_df) <- c("new_x", "new_y", "new_z")
+df_all <- cbind(df, missing_lst$replacement_df)
+
+RplotterPkg::create_table(
+  x = df_all, 
+  caption = "Missing Replaced With Median Values",
+  scroll_height = "250px",
+  fixed_thead = T)
+```
+
+4. Replace missing values using "next observation carried backward":
+```{r}
+missing_lst <- RregressPkg::plot_replace_missing(
+  df = df,
+  variables = c("x", "z"),
+  miss_values = c(1111, 9999),
+  replace_fun = "nocb"
+)
+
+colnames(missing_lst$replacement_df) <- c("new_x", "new_y", "new_z")
+df_all <- cbind(df, missing_lst$replacement_df)
+
+RplotterPkg::create_table(
+  x = df_all, 
+  caption = "Missing Replaced With 'nocb' Values",
+  scroll_height = "250px",
+  fixed_thead = T)
+```
+
+## Soybean example
+
+1. Set up the data:
+
+There are 683 observations and 36 variables.  The class of the measurement variables in Soybean is either "factor" or "ordered".  We will ignore the first variable *Class* since it is character type and convert all others to numeric.
+```{r}
+data("Soybean", package = "mlbench")
+for(i in 2:ncol(Soybean)){
+  Soybean[,i] <- as.numeric(Soybean[,i])
+}
+```
+
+2. Set the columns of interest and insert some missing values. 
+ *date* variable has one missing value. For testing assign 2 missing values to *date* variable for a total of 3.
+ *leaves* variable has no missing values. For testing assign 5 missing values to the *leaves* variable for a total of 5.
+```{r}
+columns_of_interest <- colnames(Soybean)[2:ncol(Soybean)]
+
+Soybean$date[[3]] <- NA
+Soybean$date[[4]] <- 99
+Soybean$leaves[[4]] <-  NA
+Soybean$leaves[[5]] <-  "N/A"
+Soybean$leaves[[6]] <-  "na"
+Soybean$leaves[[7]] <- NA
+Soybean$leaves[[8]] <- NaN
+```
+ 
+3. Get a count of the missing values:
+```{r}
+soybean_missing_lst <- RregressPkg::plot_replace_missing(
+  df = Soybean,
+  variables = columns_of_interest,
+  miss_values = c("N/A", "na", 99),
+  title = "Count of Missing Values",
+  subtitle = "mlbench::Soybean data set",
+  x_title = "Variable",
+  y_title = "Count of Missing Values",
+  bar_size = 0.6,
+  bar_color = "white",
+  bar_labels = TRUE,
+  bar_label_size = 3,
+  do_coord_flip = TRUE,
+  order_bars = "asc"
+)
+soybean_missing_lst$missing_plot
+```
+
+4. Apply a user defined function for replacing missing values:
+```{r}
+missing_val_fun <- function(x){
+  xx <- as.numeric(x)
+  return((max(xx) - min(xx))/2)
+}
+soybean_missing_lst <- RregressPkg::plot_replace_missing(
+  df = Soybean,
+  variables = columns_of_interest,
+  replace_fun = missing_val_fun,
+  miss_values = c("N/A", "na", 99),
+  title = "Count of Missing Values",
+  subtitle = "mlbench::Soybean data set",
+  x_title = "Variable",
+  y_title = "Count of Missing Values",
+  bar_size = 0.6,
+  bar_color = "white",
+  bar_labels = TRUE,
+  bar_label_size = 3,
+  do_coord_flip = TRUE,
+  order_bars = "asc"
+)
+soybean_missing_lst$replacement_df %>% 
+  select(date, leaves) %>% 
+  head(n = 10)
+```
+Note that *date* variable now has a value 3 and *leaves* variable now has a value of 0.5 for their missing values.
+
+5. Run `RregressPkg::plot_replace_missing()` on the replacement data.frame to check on missing values:
+```{r}
+soybean_missing_lst <- RregressPkg::plot_replace_missing(
+  df = soybean_missing_lst$replacement_df,
+  variables = columns_of_interest,
+  miss_values = c("N/A", "na", 99),
+  title = "Count of Missing Values",
+  subtitle = "mlbench::Soybean data set",
+  x_title = "Variable",
+  y_title = "Count of Missing Values",
+  bar_size = 0.6,
+  bar_color = "white",
+  bar_labels = TRUE,
+  bar_label_size = 3,
+  do_coord_flip = TRUE,
+  order_bars = "asc",
+  y_major_breaks = c(0,1,2)
+)
+soybean_missing_lst$missing_plot
+```
+

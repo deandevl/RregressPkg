@@ -3,10 +3,14 @@
 #' @description A ggplot2 bar plot of numeric missing value counts is produced along with the option to replace the values.
 #' TODO: Be able to count/replace non-numeric missing values of a data frame.
 #'
+#' @details If the argument \code{replace_fun} is \code{NULL} then only a bar chart showing the missing value count for each variable is
+#'  returned.
+#'
 #' @param df The source data frame with numeric and character variables.
-#' @param variables A character vector of numeric variable names from \code{df} to be included in the plot
+#' @param variables A character vector of numeric variable names from \code{df} to be included in the plot and possible value replacement.
 #' @param replace_fun A character string or function that sets the aggregate function for replacing missing values.
-#'  Acceptable values are \dQuote{mean} or \dQuote{median}. The parameter can also be a user defined function that
+#'  Acceptable values are \dQuote{mean}, \dQuote{median}, \dQuote{locf} (last observation carried forward),
+#'  \dQuote{nocb} (next observation carried backward). The parameter can also be a user defined function that
 #'  accepts a vector of non-missing values for a column (as determined by \code{miss_values}) and returns a single
 #'  replacement value. See an example in the \code{demos} folder.
 #' @param miss_values A vector with numeric and character values that define in addition to \code{NA} and \code{NaN}, other values
@@ -48,7 +52,7 @@
 plot_replace_missing <- function(
   df,
   variables = NULL,
-  replace_fun = "median",
+  replace_fun = NULL,
   miss_values = NULL,
   title = NULL,
   subtitle = NULL,
@@ -70,7 +74,7 @@ plot_replace_missing <- function(
   bar_label_color = "black"
 ){
 
-  df_copy <- data.table::as.data.table(df)
+  dt <- data.table::as.data.table(df)
 
   if(is.null(miss_values)) {
     miss_values <- c(NA, NaN)
@@ -78,33 +82,46 @@ plot_replace_missing <- function(
     miss_values <- c(miss_values, NA, NaN)
   }
 
-  check_val <- function(x){
-    if(x %in% miss_values){
-      return(TRUE)
-    }else{
-      return(FALSE)
-    }
-  }
-
   missing_sums <- c()
-  for(col in variables){
-    missing_t_f <- sapply(df_copy[,get(col)], check_val)
+  for(a_col in variables){
+    missing_t_f <- data.table::fifelse(
+      test = dt[, get(a_col)] %in% miss_values, yes = TRUE, no = FALSE
+    )
+
     missing_sums <- append(missing_sums, sum(missing_t_f))
-    not_missing_v <- df_copy[,get(col)][!missing_t_f]
-    if(!is.function(replace_fun)){
-      if(replace_fun == "median") {
-        median_val <- median(as.numeric(not_missing_v))
-        replaced_v <- data.table::fifelse(!missing_t_f, as.character(df_copy[,get(col)]),  as.character(median_val))
-        df_copy[, c(col) := as.numeric(replaced_v)]
-      }else if(!is.function(replace_fun) & replace_fun == "mean"){
-        mean_val <- mean(not_missing_v)
-        replaced_v <- data.table::fifelse(!missing_t_f, df_copy[,get(col)],  mean_val)
-        df_copy[, c(col) := replaced_v]
+
+    not_missing_v <- dt[, get(a_col)][!missing_t_f]
+
+    if(!is.null(replace_fun)) {
+      if(!is.function(replace_fun)){
+        if(replace_fun == "median") {
+          median_val <- median(not_missing_v)
+          replaced_v <- data.table::fifelse(!missing_t_f, as.character(dt[, get(a_col)]),  as.character(median_val))
+          dt[, (a_col) := as.numeric(replaced_v)]
+        }else if(replace_fun == "mean"){
+          mean_val <- mean(not_missing_v)
+          replaced_v <- data.table::fifelse(!missing_t_f, as.character(dt[, get(a_col)]),  as.character(mean_val))
+          dt[, (a_col) := as.numeric(replaced_v)]
+        }else if(replace_fun == "locf"){
+          x <- dt[, get(a_col)]
+          missing_na_v <- data.table::fifelse(
+            test = x %in% miss_values, yes = as.numeric(NA), no = x
+          )
+          missing_no_na_v <- data.table::nafill(x = missing_na_v, type = "locf")
+          dt[, (a_col) := missing_no_na_v]
+        }else if(replace_fun == "nocb"){
+          x <- dt[, get(a_col)]
+          missing_na_v <- data.table::fifelse(
+            test = x %in% miss_values, yes = as.numeric(NA), no = x
+          )
+          missing_no_na_v <- data.table::nafill(x = missing_na_v, type = "nocb")
+          dt[, (a_col) := missing_no_na_v]
+        }
+      }else {
+        replace_val <- replace_fun(not_missing_v)
+        replaced_v <- data.table::fifelse(!missing_t_f, as.character(dt[, get(a_col)]),  as.character(replace_val))
+        dt[, (a_col) := as.numeric(replaced_v)]
       }
-    }else {
-      replace_val <- replace_fun(not_missing_v)
-      replaced_v <- data.table::fifelse(!missing_t_f, as.character(df_copy[,get(col)]),  as.character(replace_val))
-      df_copy[, c(col) := as.numeric(replaced_v)]
     }
   }
 
@@ -141,7 +158,7 @@ plot_replace_missing <- function(
   return(
     list(
       missing_plot = aplot,
-      replacement_df = df_copy
+      replacement_df = dt
     )
   )
 }

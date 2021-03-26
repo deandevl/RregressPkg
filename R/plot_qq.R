@@ -1,7 +1,12 @@
 #' Function plots a quantile-quantile plot (QQ-plot) for comparing an
 #' observed distribution with a normal distribution.
 #'
-#' @param obs A numeric vector of observation.
+#' @param df A data frame with a column of numeric observations and optionally a column for
+#'  observation identifications.
+#' @param numeric_col A string that names the numeric column from \code{df} for QQ plotting.
+#' @param id_col An optional argument that names the column from \code{df} providing
+#'  each observation with a unique identification value.  If this argument is NULL then
+#'  row numbers of \code{df} are used for identification.
 #' @param standardize A logical which if TRUE will standardize \code{obs}.
 #' @param title A string that sets the plot title.
 #' @param subtitle A string that sets the plot subtitle.
@@ -52,7 +57,9 @@
 #'
 #' @export
 plot_qq <- function(
-  obs = NULL,
+  df = NULL,
+  numeric_col = NULL,
+  id_col = NULL,
   standardize = FALSE,
   title = NULL,
   subtitle = NULL,
@@ -84,16 +91,21 @@ plot_qq <- function(
   labels_n = NULL,
   label_color = "red"
 ){
-  dt <- data.table::data.table(
-    id = 1:length(obs),
-    y = obs
+  dt <- data.table(
+    y = df[[numeric_col]]
   )
+  if(!is.null(id_col)){
+    dt[, id := df[[id_col]]]
+  }else {
+    dt[, id := 1:nrow(dt)]
+  }
+
   if(standardize){
-    dt[, y := scale(obs)]
+    dt[, y := scale(y)]
   }
 
   data.table::setorder(dt, y)
-  obs_quantiles <- (rank(dt$y) - 0.5)/length(obs)
+  obs_quantiles <- (rank(dt$y) - 0.5)/nrow(dt)
 
   normal_quantiles <- stats::qnorm(obs_quantiles, 0, 1)
   dt[, x := normal_quantiles]
@@ -147,7 +159,7 @@ plot_qq <- function(
     }
     ci_x <- seq(-2.2, 2.2, length.out = 300)
     ci_y <- robust_line_df$obs_median + ci_x * robust_line_df$obs_sd
-    robust_se <- robust_line_df$obs_sd * se_z(z = ci_x, n = length(obs))
+    robust_se <- robust_line_df$obs_sd * se_z(z = ci_x, n = nrow(dt))
     robust_upper <- ci_y + 2 * robust_se
     robust_lower <- ci_y - 2 * robust_se
 

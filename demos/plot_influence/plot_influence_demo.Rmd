@@ -72,6 +72,22 @@ external_studentized_lst$plot
 
 Observation 21 has a external studentized residual of 6.69 and is labeled on the plot.
 
+### Compute and plot Difference in Fits (DFFITS)
+```{r, fig.width=12, fig.height=8}
+dffits_lst <- RregressPkg::plot_influence(
+  df = influence2_x_y_dt,
+  formula_obj = y ~ x,
+  id_col = "id",
+  influence_meas = "dffits",
+  label_threshold = 0.80,
+  title = "Difference in Fits Influence Measure",
+  subtitle = "; Source: PennState Science",
+  rot_y_tic_label = T
+)
+dffits_lst$plot
+```
+
+
 ### Compute and plot Cook's Distance
 ```{r, fig.width=12, fig.height=8}
 cook_lst <- RregressPkg::plot_influence(

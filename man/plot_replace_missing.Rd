@@ -7,7 +7,7 @@
 plot_replace_missing(
   df,
   variables = NULL,
-  replace_fun = "median",
+  replace_fun = NULL,
   miss_values = NULL,
   title = NULL,
   subtitle = NULL,
@@ -32,10 +32,11 @@ plot_replace_missing(
 \arguments{
 \item{df}{The source data frame with numeric and character variables.}
 
-\item{variables}{A character vector of numeric variable names from \code{df} to be included in the plot}
+\item{variables}{A character vector of numeric variable names from \code{df} to be included in the plot and possible value replacement.}
 
 \item{replace_fun}{A character string or function that sets the aggregate function for replacing missing values.
-Acceptable values are \dQuote{mean} or \dQuote{median}. The parameter can also be a user defined function that
+Acceptable values are \dQuote{mean}, \dQuote{median}, \dQuote{locf} (last observation carried forward),
+\dQuote{nocb} (next observation carried backward). The parameter can also be a user defined function that
 accepts a vector of non-missing values for a column (as determined by \code{miss_values}) and returns a single
 replacement value. See an example in the \code{demos} folder.}
 
@@ -90,6 +91,10 @@ if \code{replace_fun} is not \code{NULL}.
 \description{
 A ggplot2 bar plot of numeric missing value counts is produced along with the option to replace the values.
 TODO: Be able to count/replace non-numeric missing values of a data frame.
+}
+\details{
+If the argument \code{replace_fun} is \code{NULL} then only a bar chart showing the missing value count for each variable is
+returned.
 }
 \author{
 Rick Dean

@@ -16,9 +16,11 @@ ols_calc(
 \arguments{
 \item{df}{A data frame with columns for observed response and predictors.}
 
-\item{X_mt}{A matrix of predictor values as an alternative to \code{df}.}
+\item{X_mt}{In lieu of both \code{df} and \code{formula_obj}, a matrix of predictor values can be
+submitted along with \code{Y_mt}.}
 
-\item{Y_mt}{A single column matrix of response values as an alternative to \code{df}.}
+\item{Y_mt}{In lieu of both \code{df} and \code{formula_obj}, a single column matrix of response
+values can be submitted along with \code{X_mt}.}
 
 \item{formula_obj}{A formula object following the rules of \code{stats::lm()} construction.
 For example: y ~ log(a) + b + I(b^2) or suppress the constant with \code{0} in the formula.}
@@ -35,7 +37,7 @@ statistics, ANOVA of the regression along with residuals, fitted values, and R^2
 \description{
 The function requires a data frame with columns for observed response and predictors,
 and a formula object (class = dQuote{formula}) that describes the OLS model of interest.
-Alternatively, the function will accept a matrix \code{X} and one column matrix \code{Y} for the
+Alternatively, the function will accept a matrix \code{X_mt} and one column matrix \code{Y_mt} for the
 predictor and response values respectively.
 }
 \author{

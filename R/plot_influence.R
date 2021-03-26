@@ -8,7 +8,7 @@
 #' @param df A data frame with columns for observed response and predictors
 #' @param formula_obj A formula object following the rules of \code{stats::lm()} construction.
 #'  For example: y ~ log(a) + b + I(b^2) or suppress the constant with \code{0} in the formula.
-#' @param id_col An optional argument that names the column from data frame \code{x} providing
+#' @param id_col An optional argument that names the column from data frame \code{df} providing
 #'  each observation with a unique identification value.  If this argument is NULL then
 #'  data frame row numbers are used for identification. Unless you have less than 30 observations,
 #'  it is best to stay with row numbers and modify the \code{x_limits} and \code{x_major_breaks}
@@ -56,7 +56,6 @@
 plot_influence <- function(
   df = NULL,
   formula_obj = NULL,
- # obser_limit = 500,
   id_col = NULL,
   influence_meas = "cook",
   label_threshold = 3,
@@ -83,49 +82,56 @@ plot_influence <- function(
   do_x_title = TRUE,
   do_y_title = TRUE
 ){
-
-  ols <- RregressPkg::ols_calc(df = df, formula_obj = formula_obj)
-
-  influence_vals <- NULL
-  Hat_ii <- diag(ols$hat_mt)
+  # compute the OLS
+  X_mt <- stats::model.matrix(formula_obj, data = df)
+  Y_mt <- as.matrix(subset(stats::model.frame(formula_obj, data = df),select = 1))
+  n <- nrow(X_mt)
+  k <- ncol(X_mt)
+  qr_lst <- base::qr(X_mt)
+  Qf_mt <- base::qr.Q(qr_lst) # n x k
+  Hat_ii <- diag(Qf_mt %*% t(Qf_mt)) # n x 1
+  fitted_mt <- (Qf_mt %*% t(Qf_mt) %*% Y_mt) # n x 1
+  resid_mt <- base::qr.resid(qr_lst, Y_mt) # n x 1
+  sse <- (t(resid_mt) %*% resid_mt)[1,1]
+  mse <- sse/(n - k)
 
   if(influence_meas == "internal"){
     # compute studentized residuals or internally studentized residuals
-    influence_vals <- ols$residual_vals / sqrt(ols$mse * (1 - Hat_ii))
+    influence_vals <- resid_mt / sqrt(mse * (1 - Hat_ii))
   }else if(influence_meas == "external"){
     # compute the studentized deleted residuals or externally studentized residuals
-    student_residuals <- ols$residual_vals / sqrt(ols$mse * (1 - Hat_ii))
-    numer <- ols$n - ols$k - 1
-    denom <- ols$n - ols$k - student_residuals^2
+    student_residuals <- resid_mt / sqrt(mse * (1 - Hat_ii))
+    numer <- n - k - 1
+    denom <- n - k - student_residuals^2
     influence_vals <- student_residuals * sqrt(numer/denom)
   }else if(influence_meas == "dffits"){
     # compute the Difference in Fits(DFFITS)
-    # n <- ols$n
-    # if(n > obser_limit){
-    #   n <- obser_limit
-    # }
-    # Hat_ii <- diag(ols$Hat)
-    # influence_vals <- vector(mode="numeric", length = n)
-    # Inter_v <- c(Inter = 1)
-    # X_I <- cbind(Inter_v,ols$X)
-    # for(i in 1:n){
-    #   X_i <- ols$X[-i,,drop=F]
-    #   Y_i <- ols$Y[-i,,drop=F]
-    #   ols_i <- RregressPkg::ols_matrix_calc(X_i,Y_i)
-    #   Fitted_i <- X_I %*% ols_i$Coef
-    #   Dif <- ols$Fitted_val - Fitted_i
-    #   Denom <- sqrt(ols_i$mse * Hat_ii)
-    #   influence_vals[[i]] <- (Dif/Denom)[i,]
-    # }
+    influence_vals <- vector(mode="numeric", length = n)
+    for(i in 1:n){
+      X_i_mt <- X_mt[-i,,drop=F]
+      Y_i_mt <- Y_mt[-i,,drop=F]
+      qr_i_lst <- base::qr(X_i_mt)
+      coef_i_mt <- (base::qr.coef(qr_i_lst, Y_i_mt))
+      fitted_i_mt <- X_mt %*% coef_i_mt
+      dif_fit_i_mt <- fitted_mt - fitted_i_mt
+      resid_i_mt <- base::qr.resid(qr_i_lst, Y_i_mt)
+      sse_i <- (t(resid_i_mt) %*% resid_i_mt)[1,1]
+      mse_i <- sse_i/(n - k - 1)
+      denom <- sqrt(mse_i * Hat_ii)
+      influence_vals[[i]] <- (dif_fit_i_mt/denom)[i,]
+    }
+    influence_vals <- as.data.frame(influence_vals)
   }else if(influence_meas == "cook"){
     # compute Cook's distance measure
-    Y_mt <- as.matrix(subset(stats::model.frame(formula_obj, data = df),select = 1))
-    influence_vals <- vector(mode="numeric", length = ols$n)
-    for(i in 1:ols$n){
-      Residual <- ((Y_mt - ols$fitted_vals)^2)/(ols$k * ols$mse)
+    influence_vals <- vector(mode="numeric", length = n)
+
+    for(i in 1:n){
+      Residual <- ((resid_mt)^2)/(k * mse)
       Leverage <- Hat_ii/(1 - Hat_ii)^2
       influence_vals[[i]] <- (Residual * Leverage)[i,]
     }
+
+    influence_vals <- as.data.frame(influence_vals)
   }
 
   # create a plot object of the influence values
@@ -141,8 +147,8 @@ plot_influence <- function(
     )
   }
 
-  influence_vals_df <- data.frame(influence_vals = influence_vals)
-  influence_df <- cbind(influence_df, influence_vals_df)
+  colnames(influence_vals) <- "influence_vals"
+  influence_df <- cbind(influence_df, influence_vals)
 
   influence_plot <- RplotterPkg::create_scatter_plot(
     df = influence_df,
@@ -172,10 +178,11 @@ plot_influence <- function(
 
   label_data_df <- subset(influence_df, abs(influence_vals) >= label_threshold)
 
-  #label_data <- influence_dt[abs(influence_vals) >= label_threshold]
-  influence_plot <- influence_plot +
-    ggplot2::geom_point(data = label_data_df, color = label_color, size = 2.5) +
-    ggrepel::geom_text_repel(data = label_data_df, aes(label = id), color = label_color)
+  if(nrow(label_data_df) > 0){
+    influence_plot <- influence_plot +
+      ggplot2::geom_point(data = label_data_df, color = label_color, size = 2.5) +
+      ggrepel::geom_text_repel(data = label_data_df, aes(label = id), color = label_color)
+  }
 
   return(
     list(

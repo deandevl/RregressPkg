@@ -7,13 +7,15 @@
 plot_fit_residuals(
   df = NULL,
   formula_obj = NULL,
+  residual_standardized = FALSE,
   id_col = NULL,
   label_threshold = NULL,
   label_color = "red",
+  label_sd = NULL,
   title = NULL,
   subtitle = NULL,
   x_title = "Fitted Values",
-  y_title = "Residual Values",
+  y_title = NULL,
   rot_y_tic_label = FALSE,
   x_limits = NULL,
   x_major_breaks = waiver(),
@@ -50,6 +52,10 @@ response variable.}
 \item{formula_obj}{A formula object following the rules of \code{stats::lm()} construction.
 For example: y ~ log(a) + b + I(b^2) or suppress the constant with \code{0} in the formula.}
 
+\item{residual_standardized}{A logical which if TRUE will divide the raw residuals by their
+estimated standard deviation. The square root of the absolute value of each standardized
+residual is then plotted against their respective fitted value.}
+
 \item{id_col}{An optional argument that names the column from data frame \code{df} providing
 each observation with a unique identification value.  If this argument is NULL then
 data frame row numbers are used for identification.}
@@ -59,6 +65,9 @@ will be labeled with their id.}
 
 \item{label_color}{A string that sets the label/point color for observations whose absolute
 residual is greater than the \code{label_threshold}.}
+
+\item{label_sd}{A numeric that sets the number times +/- residual standard deviations to plot as a
+pair of horizontal dotted lines. Typical values could be 1 or 2 standard deviations.}
 
 \item{title}{A string that sets the plot title.}
 
@@ -132,6 +141,11 @@ Function returns a ggplot2 object of fitted vs residual values.
 }
 \description{
 Function returns a ggplot2 scatter plot object which can be further modified.
+}
+\details{
+For the standardized residuals, the raw residuals are divided by their standard deviation.
+The square root of the absolute value of each standardized residual is then plotted against their
+respective fitted value.
 }
 \author{
 Rick Dean

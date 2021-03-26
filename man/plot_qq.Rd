@@ -6,7 +6,9 @@
 observed distribution with a normal distribution.}
 \usage{
 plot_qq(
-  obs = NULL,
+  df = NULL,
+  numeric_col = NULL,
+  id_col = NULL,
   standardize = FALSE,
   title = NULL,
   subtitle = NULL,
@@ -40,7 +42,14 @@ plot_qq(
 )
 }
 \arguments{
-\item{obs}{A numeric vector of observation.}
+\item{df}{A data frame with a column of numeric observations and optionally a column for
+observation identifications.}
+
+\item{numeric_col}{A string that names the numeric column from \code{df} for QQ plotting.}
+
+\item{id_col}{An optional argument that names the column from \code{df} providing
+each observation with a unique identification value.  If this argument is NULL then
+row numbers of \code{df} are used for identification.}
 
 \item{standardize}{A logical which if TRUE will standardize \code{obs}.}
 

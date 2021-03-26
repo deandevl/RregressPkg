@@ -2,14 +2,16 @@
 #'
 #' @description The function requires a data frame with columns for observed response and predictors,
 #'  and a formula object (class = dQuote{formula}) that describes the OLS model of interest.
-#'  Alternatively, the function will accept a matrix \code{X} and one column matrix \code{Y} for the
+#'  Alternatively, the function will accept a matrix \code{X_mt} and one column matrix \code{Y_mt} for the
 #'  predictor and response values respectively.
 #'
 #' @param df A data frame with columns for observed response and predictors.
-#' @param X_mt A matrix of predictor values as an alternative to \code{df}.
-#' @param Y_mt A single column matrix of response values as an alternative to \code{df}.
 #' @param formula_obj A formula object following the rules of \code{stats::lm()} construction.
 #'  For example: y ~ log(a) + b + I(b^2) or suppress the constant with \code{0} in the formula.
+#' @param X_mt In lieu of both \code{df} and \code{formula_obj}, a matrix of predictor values can be
+#'  submitted along with \code{Y_mt}.
+#' @param Y_mt In lieu of both \code{df} and \code{formula_obj}, a single column matrix of response
+#'  values can be submitted along with \code{X_mt}.
 #' @param confid_level A numeric that defines the confidence level for estimating confidence
 #'  intervals. The default is 0.95.
 #' @param na_omit A logical which if TRUE will omit rows that have NA values.
@@ -37,49 +39,35 @@ ols_calc <- function(
   }
   n <- nrow(Y_mt)
   k <- ncol(X_mt)
-  p <- n - k  - 1
+  p <- n - k - 1
 
   # corrected degrees of freedom for model
   dfm <- k - 1
   # degrees of freedom for error
   dfe <- n - k
-
-  # if("(Intercept)" %in% colnames(X_mt)){
-  #   browser()
-  #   dfe <- n - k - 1
-  # }
-
   # corrected degrees of freedom total
   dft <- n - 1
   # note: dfm + dfe = dft
 
   # decompose the predictor matrix X_mt into Q_mt and R_mt
-  qr_lst <- get_qr(X = X_mt)
+  qr_lst <- base::qr(X_mt)
 
-  Q_mt <- qr_lst$Q # n x n
+  coef_v <- base::qr.coef(qr_lst, Y_mt)[,1]
+  fitted_v <- base::qr.fitted(qr_lst, Y_mt)[,1]
+  residual_mt <- base::qr.resid(qr_lst, Y_mt)
+  residual_v <- residual_mt[,1]
 
-  Qf_mt <- qr_lst$Qf # n x k
+  sse <- (t(residual_mt) %*% residual_mt)[1,1]
 
-  R_mt <- qr_lst$R # k x k
+  R_mt <- base::qr.R(qr_lst)
+  R_inv_mt <- solve(R_mt)     # k x k elements
 
-  # compute vectors "f" and "r"
-  tQY_mt <- t(Q_mt) %*% Y_mt # n x 1
+  Qf_mt <- base::qr.Q(qr_lst)
 
-  f_v <- tQY_mt[1:k,]   # k elements
-  r_v <- tQY_mt[(k + 1):n,] # n - k elements
+  tQY_mt <- base::qr.qty(qr_lst, Y_mt)
+  f_v <- tQY_mt[1:k,]           # k
+  r_v <- tQY_mt[(k+1):n,]       # n - k
 
-  # estimate coefficients
-  R_inv_mt <- solve(R_mt) # k x k elements
-  coef_v <- (R_inv_mt %*% f_v)[,1] # k x 1 elements
-
-  # compute fitted values vector
-  fitted_v <- (Qf_mt %*% t(Qf_mt) %*% Y_mt)[,1]
-
-  # compute residual values vector
-  residual_v <- (Y_mt - fitted_v)[,1]
-
-  # compute residual sum of sqares
-  sse <- (t(r_v) %*% r_v)[1,1]
   # compute mean square error
   mse <- sse / dfe
   # residual standard error
@@ -97,7 +85,7 @@ ols_calc <- function(
   mst <- sst / dft
 
   # compute variance-covariance matrix of coefficients
-  var_cov_coef_mt <- R_inv_mt %*% t(R_inv_mt) * mse # p x p elements
+  var_cov_coef_mt <- (R_inv_mt %*% t(R_inv_mt)) * mse # p x p elements
 
   # compute the standard errors of coefficients
   coef_var_v <- diag(var_cov_coef_mt)
@@ -208,33 +196,4 @@ ols_calc <- function(
     k = k,
     p = p
   ))
-}
-
-# function for factorization of predictor matrix X via orthogonal QR decomposition
-get_qr <- function(X){
-  A <- X
-  n <- nrow(A)
-  k <- ncol(A)
-  Q <- diag(n)
-
-  for(i in 1:k){
-    # extract the kth column of the matrix
-    col <- A[i:n, i]
-    # calculation of the norm of the column in order to create the vector r
-    norm1 <- sqrt(drop(crossprod(col)))
-    # calculate the reflection vector  a_r
-    a_r <- col
-    a_r[1] <- a_r[1] + sign(a_r[1]) * norm1
-    # beta <- 2 / ||a_r||^2
-    beta <- 2 / drop(crossprod(a_r))
-    # update matrix Q (trailing matrix only) by Householder reflection
-    Q[,i:n] <- Q[,i:n] - tcrossprod(Q[,i:n] %*% a_r, beta * a_r)
-    # update matrix A (trailing matrix only) by Householder reflection
-    A[i:n, i:k] <- A[i:n,i:k] - tcrossprod(beta * a_r, crossprod(A[i:n,i:k], a_r))
-  }
-
-  R <- A[1:k, ]
-  R[lower.tri(R)] <- 0
-
-  return(list(Q = Q, Qf = Q[,1:k], R = R))
 }

@@ -40,7 +40,7 @@ plot_influence(
 \item{formula_obj}{A formula object following the rules of \code{stats::lm()} construction.
 For example: y ~ log(a) + b + I(b^2) or suppress the constant with \code{0} in the formula.}
 
-\item{id_col}{An optional argument that names the column from data frame \code{x} providing
+\item{id_col}{An optional argument that names the column from data frame \code{df} providing
 each observation with a unique identification value.  If this argument is NULL then
 data frame row numbers are used for identification. Unless you have less than 30 observations,
 it is best to stay with row numbers and modify the \code{x_limits} and \code{x_major_breaks}

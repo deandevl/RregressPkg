@@ -1,0 +1,117 @@
+---
+title: "Demo for RregressPkg::ols_F_LM_calc()"
+output: 
+   html_document:
+    toc: yes
+    toc_depth: 3
+params:
+  date: !r Sys.Date()    
+---
+
+```{r,setup, include=FALSE, eval=TRUE}
+options(knitr.table.format = "html", width = 140)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.width = 12, fig.height = 8)
+```
+
+```{r, warning=FALSE, message=FALSE}
+library(knitr)
+library(kableExtra)
+library(data.table)
+library(RregressPkg)
+library(RplotterPkg)
+library(wooldridge)
+```
+
+## Predicting baseball salaries and alternative OLS models
+Source: "Using R for Introductory Econometrics" by Florian Heiss, Section 4.3 page 109
+ 
+Also: "Introductory Econometrics, A Modern Approach, 6th edition" by Jeffery Wooldridge, Section 4.5 page 127
+
+Unrestricted OLS Formula: log(salary) ~ years + gamesyr + bavg + hrunsyr + rbisyr
+
+Restricted OLS Formula: log(salary) ~ years + gamesyr
+
+Null hypothesis: 
+
+$$H_{0}: \beta_{bavg} = \beta_{hrunsyr} = \beta_{rbisyr} = 0$$
+Alternative hypothesis: at least one of $\beta_{years}$ or $\beta{gamesyr}$ has an influence on *salary*.
+
+### Set up the data
+```{r}
+data("mlb1", package = "wooldridge")
+mlb1_dt <- data.table::setDT(mlb1)
+mlb1_dt <- mlb1_dt[,.(salary, years, gamesyr, bavg, hrunsyr, rbisyr)]
+```
+
+### Define the unrestricted/restricted OLS models
+```{r}
+ur_formula_obj <- log(salary) ~ years + gamesyr + bavg + hrunsyr + rbisyr
+r_formula_obj <- log(salary) ~ years + gamesyr
+```
+
+### Run `RregressPkg::ols_F_LM_calc()`
+```{r}
+F_LM_lst <- RregressPkg::ols_F_LM_calc(
+  df = mlb1,
+  ur_formula_obj = ur_formula_obj,
+  r_formula_obj = r_formula_obj,
+  confid_level = 0.99
+)
+```
+
+### Show the F-LM statistics
+```{r}
+RplotterPkg::create_table(
+  x = F_LM_lst$F_LM_df,
+  caption = "Reject bavg = hrunsyr = rbisyr = 0 at 99% confidence level",
+  full_width = T,
+  align_v = rep("c",4)
+)
+```
+
+## Economic Model of Crime
+Source: "Using R for Introductory Econometrics" by Florian Heiss, Section 5.2 page 121
+ 
+Also: "Introductory Econometrics, A Modern Approach, 6th edition" by Jeffery Wooldridge, Section 5.2a page 158
+
+Unrestricted OLS Formula: narr86 ~ pcnv + avgsen + tottime + ptime86 + qemp86 
+
+Restricted OLS Formula: narr86 ~ pcnv + ptime86 + qemp86
+
+Null hypothesis: 
+
+$$H_{0}: \beta_{avgsen} = \beta_{tottime} = 0$$
+
+### Set up the data
+```{r}
+data("crime1", package = "wooldridge")
+crime1_dt <- data.table::setDT(crime1)
+crime1_dt <- crime1_dt[, .(narr86, pcnv, avgsen, tottime, ptime86, qemp86)]
+```
+
+### Define the unrestricted/restricted OLS models
+```{r}
+ur_formula_obj <- narr86 ~ pcnv + avgsen + tottime + ptime86 + qemp86 
+r_formula_obj <- narr86 ~ pcnv + ptime86 + qemp86 
+```
+
+### Run `RregressPkg::ols_F_LM_calc()`
+```{r}
+F_LM_lst <- RregressPkg::ols_F_LM_calc(
+  df = crime1_dt,
+  ur_formula_obj = ur_formula_obj,
+  r_formula_obj = r_formula_obj,
+  confid_level = 0.90
+)
+```
+
+### Show the F-LM statistics
+```{r}
+RplotterPkg::create_table(
+  x = F_LM_lst$F_LM_df,
+  caption = "Do not reject avgsen = tottime = 0 at 90% confidence level",
+  full_width = T,
+  align_v = rep("c", 4)
+)
+```
+

@@ -1,0 +1,56 @@
+---
+title: "Demo of RregressPkg::plot_residuals_check()"
+output: 
+   html_document:
+    toc: yes
+    toc_depth: 3
+params:
+  date: !r Sys.Date()    
+---
+
+```{r,setup, include=FALSE, eval=TRUE}
+options(knitr.table.format = "html", width = 140)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.width = 12, fig.height = 8)
+```
+
+```{r, warning=FALSE, message=FALSE}
+library(knitr)
+library(kableExtra)
+library(data.table)
+library(RregressPkg)
+library(RplotterPkg)
+```
+
+## An example from "Generalized Additive Models"
+
+The following example is from the text "Generalized Additive Models", Section 1.5, page 25  by Simon Wood.
+
+### Set up the data
+```{r}
+data("sperm.comp1", package = "gamair")
+sperm1_dt <- data.table::setDT(sperm.comp1)
+data.table::setnames(sperm1_dt,c("time.ipc","prop.partner"), c("time_ipc","prop_partner"))
+```
+
+### Define the OLS model formula object
+```{r}
+formula_obj <- count ~ time_ipc + prop_partner
+```
+
+### Plot the residual/datum checks
+```{r, fig.width=11, fig.height=11}
+RregressPkg::plot_residuals_check(
+  df = sperm1_dt,
+  formula_obj = formula_obj,
+  id_col = "subject",
+  residual_label_threshold = 120,
+  leverage_label_threshold = 0.2,
+  label_sd = 1.0,
+  title = "Check Residuals",
+  subtitle = "count ~ time_ipc + prop_partner",
+  pts_size = 2.5,
+  pts_fill = "green",
+  pts_color = "black"
+)
+```
+

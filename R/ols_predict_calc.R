@@ -1,7 +1,7 @@
 #' Function computes response values for a certain set of constant predictor values
 #'
 #' @description The function requires a data frame with columns for observed response and predictors,
-#'  a formula object (class = dQuote{formula}), and a data frame of target predictor values. From the
+#'  a formula object (class = "formula"), and a data frame of target predictor values. From the
 #'  predictor values estimates of the response are calculated along with their corresponding
 #'  "confidence" or "prediction" intervals.
 #'
@@ -11,7 +11,7 @@
 #' @param predictor_vals_df A data frame of target predictor values to use for estimating the responses
 #'  and associated confidence intervals.
 #' @param interval A string that sets the type of confidence interval.  Acceptable values
-#'  are dQuote{confidence} or dQuote{prediction}.
+#'  are "confidence" or "prediction".
 #' @param confid_level A numeric that defines the confidence level for estimating confidence
 #'  intervals. The default is 0.95.
 #'
@@ -49,6 +49,9 @@ ols_predict_calc <- function(
   X_mt <- stats::model.matrix(formula_obj, data = df)
   Y_mt <- as.matrix(subset(stats::model.frame(formula_obj, data = df),select = 1))
 
+  n <- nrow(X_mt)
+  k <- ncol(X_mt)
+  t_cv <- stats::qt(1 - (1 - confid_level)/2.0, n - k - 1)
   return_df <- data.frame()
 
   if(interval == "confidence"){
@@ -56,21 +59,24 @@ ols_predict_calc <- function(
       # subtract target predictor values a row at a time from sample predictor values
       X_diff_mt <- t(apply(X = X_mt, MARGIN = 1, FUN = function(x) x - predict_mt[i,]))
 
-      ols <- RregressPkg::ols_calc(
-       # df = xy_df,
-        X_mt = X_diff_mt,
-        Y_mt = Y_mt,
-        formula_obj = formula_obj,
-        confid_level = confid_level
-      )
+      # compute the OLS coefficients
+      qr_lst <- base::qr(X_diff_mt)
+      R_mt <- base::qr.R(qr_lst) # p x p
+      tQY_mt <- base::qr.qty(qr_lst, Y_mt)
+      f_v <- tQY_mt[1:k,]           # k
+      r_v <- tQY_mt[(k+1):n,]       # n - k
+      R_inv_mt <- solve(R_mt)               # p x p
+      coef_vals <- (R_inv_mt %*% f_v)[,1]  # p x 1
+      sigma_sq <- (t(r_v) %*% r_v)[1,1]/(n - k)
+      var_cov_coef <- R_inv_mt %*% t(R_inv_mt) * sigma_sq # p x p
+      se <- sqrt(diag(var_cov_coef))[["(Intercept)"]]
+
       # compute confidence intervals
-      t_cv <- ols$t_critical_val
-      se <- ols$coef_se_vals[["(Intercept)"]]
-      ci_lower <- ols$coef_vals[["(Intercept)"]] - se * t_cv
-      ci_upper <- ols$coef_vals[["(Intercept)"]] + se * t_cv
+      ci_lower <- coef_vals[["(Intercept)"]] - se * t_cv
+      ci_upper <- coef_vals[["(Intercept)"]] + se * t_cv
 
       confid_df <- data.frame(
-        fit = ols$coef_vals[["(Intercept)"]],
+        fit = coef_vals[["(Intercept)"]],
         lwr = ci_lower,
         upr = ci_upper,
         se = se
@@ -83,21 +89,26 @@ ols_predict_calc <- function(
       # subtract target predictor values a row at a time from sample predictor values
       X_diff_mt <- t(apply(X = X_mt, MARGIN = 1, FUN = function(x) x - predict_mt[i,]))
 
-      ols <- RregressPkg::ols_calc(
-        X_mt = X_diff_mt,
-        Y_mt = Y_mt,
-        formula_obj = formula_obj,
-        confid_level = confid_level
-      )
-
+      # compute the OLS coefficients
+      qr_lst <- base::qr(X_diff_mt)
+      R_mt <- base::qr.R(qr_lst) # p x p
+      tQY_mt <- base::qr.qty(qr_lst, Y_mt)
+      f_v <- tQY_mt[1:k,]           # k
+      r_v <- tQY_mt[(k+1):n,]       # n - k
+      R_inv_mt <- solve(R_mt)               # p x p
+      coef_vals <- (R_inv_mt %*% f_v)[,1]  # p x 1
+      sigma_sq <- (t(r_v) %*% r_v)[1,1]/(n - k)
+      var_cov_coef <- R_inv_mt %*% t(R_inv_mt) * sigma_sq # p x p
+      resid_mt <- base::qr.resid(qr_lst, Y_mt)
+      sse <- (t(resid_mt) %*% resid_mt)[1,1]
+      mse <- sse/(n - 2)  # see page 49, eq 2.61, "Introd Econometrics"
+      se <- sqrt(diag(var_cov_coef)[["(Intercept)"]]^2 + mse)
       # compute prediction intervals
-      t_cv <- ols$t_critical_val
-      se <- sqrt(ols$coef_se_vals[["(Intercept)"]]^2 + ols$mse)
-      ci_lower <- ols$coef_vals[["(Intercept)"]] -  se * t_cv
-      ci_upper <- ols$coef_vals[["(Intercept)"]] +  se * t_cv
+      ci_lower <- coef_vals[["(Intercept)"]] - se * t_cv
+      ci_upper <- coef_vals[["(Intercept)"]] + se * t_cv
 
       confid_df <- data.frame(
-        fit = ols$coef_vals[["(Intercept)"]],
+        fit = coef_vals[["(Intercept)"]],
         lwr = ci_lower,
         upr = ci_upper,
         se = se
