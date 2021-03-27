@@ -1,0 +1,87 @@
+---
+title: "Demo of RregressPkg::plot_correlations()"
+output: 
+   html_document:
+    toc: yes
+    toc_depth: 3
+params:
+  date: !r Sys.Date()    
+---
+
+```{r,setup, include=FALSE, eval=TRUE}
+options(knitr.table.format = "html", width = 140)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.width = 12, fig.height = 8)
+```
+
+<div>Author: Rick Dean</div>
+<div>Article date: `r params$date`</div>
+
+```{r, warning=FALSE, message=FALSE}
+library(knitr)
+library(data.table)
+library(here)
+library(ggplot2)
+library(RplotterPkg)
+library(RregressPkg)
+```
+
+## Correlations among selected variables in `ggplot2::midwest`
+1. Create a data frame with 12 selected variables and 437 observations:
+```{r}
+midwest_dt <- data.table::setDT(ggplot2::midwest)
+midwest_dt <- midwest_dt[, .(popdensity, percwhite, percblack, popadults, perchsd, percollege, percprof,
+                             percbelowpoverty, percchildbelowpovert, percadultpoverty, percelderlypoverty, inmetro)]
+```
+
+2. Plot the correlations without clustering, accepting all the plot defaults:
+```{r, fig.width=13, fig.height=13}
+corr_lst <- RregressPkg::plot_correlations(
+  x = midwest_dt,
+  title = "Correlations of Midwest Demographic Variables",
+  subtitle = "Source: ggplot2::midwest"
+)
+corr_lst$corr_plot
+```
+
+3. Repeat the above plot with clustering:
+```{r, fig.width=13, fig.height=13}
+corr_lst <- RregressPkg::plot_correlations(
+  x = midwest_dt,
+  title = "Cluster Correlations of Midwest Demographic Variables",
+  subtitle = "Source: ggplot2::midwest",
+  cluster_corr = TRUE
+)
+corr_lst$corr_plot
+```
+
+## Correlations related to blood pressure
+
+Source: PennState Stat 501 Eberly College of Science, Section 12.1, Example 12.1
+
+1. Read the data:
+```{r}
+current_dir <- here::here()
+data_dir <- file.path(current_dir, "demos/data")
+data_path <- file.path(data_dir, "bloodpress.txt")
+bloodpress_dt <- data.table::fread(data_path)
+bloodpress_dt <- bloodpress_dt[, !c("Pt")]
+```
+
+2. Compute and show the correlations among the variables:
+```{r}
+bp_corr_lst <- RregressPkg::plot_correlations(
+  x = bloodpress_dt,
+  title = "Blood Pressure Related Variables",
+  subtitle = "PennState Stat 501 Eberly College of Science"
+)
+row_names_df <- data.frame(
+  Variable = row.names(bp_corr_lst$corr)
+) 
+df <- cbind(row_names_df, as.data.frame(bp_corr_lst$corr))
+RplotterPkg::create_table(
+  x = df,
+  caption = "Blood Pressure Correlations"
+)
+
+```
+

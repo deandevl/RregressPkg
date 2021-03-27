@@ -2,10 +2,11 @@
 % Please edit documentation in R/plot_correlations.R
 \name{plot_correlations}
 \alias{plot_correlations}
-\title{Function produces a heatmap plot of a correlation matrix.}
+\title{Function computes simple Pearson correlations between variables of a data frame/matrix along with a heatmap plot.}
 \usage{
 plot_correlations(
-  corr,
+  x = NULL,
+  create_plot = TRUE,
   cluster_corr = FALSE,
   tile_border_color = "white",
   label_sz = 11,
@@ -25,8 +26,9 @@ plot_correlations(
 )
 }
 \arguments{
-\item{corr}{A square, symmetric, named, numeric matrix of correlation values between -1 to 1 in value. This is typically
-the Value from \code{stats::cor()}.}
+\item{x}{A numeric data frame or matrix with variable columns and their observational values along the rows.}
+
+\item{create_plot}{A logical that if TRUE will create a heatmap plot of the correlations.}
 
 \item{cluster_corr}{A logical that if TRUE will cluster the correlations across the heatmap scales.}
 
@@ -63,10 +65,11 @@ the Value from \code{stats::cor()}.}
 \item{show_legend}{A logical that controls the appearance of the legend.}
 }
 \value{
-A ggplot2 plot object.
+A named list with a data frame of correlations between the variables and a ggplot2 plot object.
 }
 \description{
-With the submission of a correlation matrix, the function returns a ggplot2 plot object that takes the form
+The data frame/matrix should have observations along the rows without NA values
+and the columns of variables are assumed to be numeric. The ggplot2 plot object takes the form
 of a color coded heatmap of the upper triangular portion of a symmetric correlation matrix.
 }
 \author{
