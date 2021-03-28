@@ -4,10 +4,10 @@
 \alias{low_predictor_collinearity}
 \title{Function provides a way to identify a set of predictors with pairwise low collinearity among themselves.}
 \usage{
-low_predictor_collinearity(corr_matrix, threshold = 0.75)
+low_predictor_collinearity(df = NULL, threshold = 0.75)
 }
 \arguments{
-\item{corr_matrix}{A symmetric numeric correlation matrix-like object with the predictor names for both the column names and row names.}
+\item{df}{A numeric data frame of predictor variables without NA values}
 
 \item{threshold}{A numeric that sets the minimum correlation between pairs of predictors to run through the algorithm.}
 }
@@ -20,8 +20,14 @@ Returning a named list with:
 }
 }
 \description{
-With the submission of a symmetric correlation matrix among predictor variables, the function will perform
-the following algorithm:
+With the submission of a data frame with values for potential predictor variables, the function
+computes pairwise correlations among the predictors. From this list of correlations the function removes
+the minimum number of predictors to ensure that all correlations are below a certain threshold.
+}
+\details{
+Note that predictors of the data frame must all be numeric without NA values.
+
+The function's algorithm follows the following steps:
 \enumerate{
 \item Create a starting list of the all the candidate predictors.
 \item Create a second list of pairs of predictors with correlations above a given threshold and order the correlations

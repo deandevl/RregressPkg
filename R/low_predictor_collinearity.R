@@ -1,7 +1,12 @@
 #' Function provides a way to identify a set of predictors with pairwise low collinearity among themselves.
 #'
-#' @description With the submission of a symmetric correlation matrix among predictor variables, the function will perform
-#' the following algorithm:
+#' @description With the submission of a data frame with values for potential predictor variables, the function
+#' computes pairwise correlations among the predictors. From this list of correlations the function removes
+#' the minimum number of predictors to ensure that all correlations are below a certain threshold.
+#'
+#' @details Note that predictors of the data frame must all be numeric without NA values.
+#'
+#' The function's algorithm follows the following steps:
 #'
 #' 1. Create a starting list of the all the candidate predictors.
 #'
@@ -19,7 +24,7 @@
 #'
 #' 6. The predictors left in the starting list are identified as having a low level of collinearity.
 #'
-#' @param corr_matrix A symmetric numeric correlation matrix-like object with the predictor names for both the column names and row names.
+#' @param df A numeric data frame of predictor variables without NA values
 #' @param threshold A numeric that sets the minimum correlation between pairs of predictors to run through the algorithm.
 #'
 #' @importFrom data.table data.table
@@ -35,44 +40,76 @@
 #'
 #' @export
 low_predictor_collinearity <- function(
-  corr_matrix,
+  df = NULL,
   threshold = 0.75
 ){
-  predictor_names <- colnames(corr_matrix)
-  corr_flat_dt <- flatten_corr(corr_matrix)
+  # compute the coorelation matrix
+  n <- nrow(df)
+  predictor_names <- colnames(df)
 
-  # Get the pairs of variables with absolute correlation values > threshold:
-  corr_threshold_dt <- corr_flat_dt[abs(cor_val) > threshold,][order(-cor_val)]
+  if(!anyNA(df)){
+    # compute variable means
+    means_v <- apply(X = df, MARGIN = 2, FUN = function(x){
+      mean(x)
+    })
 
-  predictor_correlations <- NULL
-  # Find the max pair among seg_correlations_threshold_df
-  while(nrow(corr_threshold_dt) != 0){
-    A_var <- corr_threshold_dt$cor_row[[1]]
-    B_var <- corr_threshold_dt$cor_column[[1]]
+    # create a means for each column of variables
+    M <- matrix(means_v, nrow = 1)
+    means_mt <- matrix(data = 1, nrow = n) %*% M
 
-    A_vars <- corr_threshold_dt[cor_row == A_var | cor_column == A_var]
-    A_var_mean <- mean(A_vars$cor_val)
+    # subtract the means from data
+    df_mt <- as.matrix(df)
+    diff_mt <- df_mt - means_mt
 
-    B_vars <- corr_threshold_dt[cor_row == B_var | cor_column == B_var]
-    B_var_mean <- mean(B_vars$cor_val)
+    # create covariance matrix
+    var_cor_mt <- t(diff_mt) %*% diff_mt * (n - 1)^-1
 
-    if(abs(A_var_mean) >= abs(B_var_mean)){
-      predictor_names <- predictor_names[predictor_names != A_var]
-      corr_threshold_dt <- corr_threshold_dt[cor_row != A_var & cor_column != A_var]
-    }else{
-      predictor_names <- predictor_names[predictor_names != B_var]
-      corr_threshold_dt <- corr_threshold_dt[cor_row != B_var & cor_column != B_var]
+    # compute variables sd and sd cross products
+    var_mt <- diag(var_cor_mt)
+    sd_mt <- sqrt(var_mt)
+    sd_product_mt <- sd_mt %*% t(sd_mt)
+
+    # divide var-cor matrix by sd cross products
+    corr_mt <- var_cor_mt / sd_product_mt
+
+    corr_flat_dt <- flatten_corr(corr_mt)
+
+    # Get the pairs of variables with absolute correlation values > threshold:
+    corr_threshold_dt <- corr_flat_dt[abs(cor_val) > threshold,][order(-cor_val)]
+
+    predictor_correlations <- NULL
+
+    # Find the max pair among seg_correlations_threshold_df
+    while(nrow(corr_threshold_dt) != 0){
+      A_var <- corr_threshold_dt$cor_row[[1]]
+      B_var <- corr_threshold_dt$cor_column[[1]]
+
+      A_vars <- corr_threshold_dt[cor_row == A_var | cor_column == A_var]
+      A_var_mean <- mean(A_vars$cor_val)
+
+      B_vars <- corr_threshold_dt[cor_row == B_var | cor_column == B_var]
+      B_var_mean <- mean(B_vars$cor_val)
+
+      if(abs(A_var_mean) >= abs(B_var_mean)){
+        predictor_names <- predictor_names[predictor_names != A_var]
+        corr_threshold_dt <- corr_threshold_dt[cor_row != A_var & cor_column != A_var]
+      }else{
+        predictor_names <- predictor_names[predictor_names != B_var]
+        corr_threshold_dt <- corr_threshold_dt[cor_row != B_var & cor_column != B_var]
+      }
+      predictor_correlations <-  corr_mt[predictor_names,predictor_names]
     }
-    predictor_correlations <-  corr_matrix[predictor_names,predictor_names]
 
-  }
-  return(
-    list(
-      predictors = predictor_names,
-      correlations = predictor_correlations,
-      max_correlation = max(predictor_correlations[upper.tri(predictor_correlations)])
+    return(
+      list(
+        predictors = predictor_names,
+        correlations = predictor_correlations,
+        max_correlation = max(predictor_correlations[upper.tri(predictor_correlations)])
+      )
     )
-  )
+  }else {
+    stop("Numeric data frame must not have NA values")
+  }
 }
 
 # Defines a function for flattening the upper triangular portion of the correlation matrix:

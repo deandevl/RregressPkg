@@ -1,0 +1,73 @@
+---
+title: "Demo of RregressPkg::low_predictor_collinearity()"
+output: 
+   html_document:
+    toc: yes
+    toc_depth: 3
+params:
+  date: !r Sys.Date()    
+---
+
+```{r,setup, include=FALSE, eval=TRUE}
+options(knitr.table.format = "html", width = 140)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.width = 12, fig.height = 8)
+```
+
+<div>Author: Rick Dean</div>
+<div>Article date: `r params$date`</div>
+
+```{r, warning=FALSE, message=FALSE}
+library(knitr)
+library(kableExtra)
+library(data.table)
+library(here)
+library(RregressPkg)
+```
+
+## Potential predictors of blood pressure
+
+The data set of predictors originates from [PennState Eberly College of Science](https://online.stat.psu.edu/stat501/lesson/welcome-stat-501) Lesson 12: Multicollinearity & Other Regression Pitfalls.
+
+1. Read in the data set:
+```{r}
+current_dir <- here::here()
+data_dir <- file.path(current_dir, "demos/data")
+data_path <- file.path(data_dir, "bloodpress.txt")
+bloodpress_dt <- data.table::fread(data_path)
+bloodpress_dt <- bloodpress_dt[, !c("Pt")]
+```
+
+
+2. Show the correlations among the predictors and the blood pressure response variable:
+```{r}
+bp_corr_lst <- RregressPkg::plot_correlations(
+  x = bloodpress_dt,
+  title = "Blood Pressure Related Variables",
+  subtitle = "PennState Stat 501 Eberly College of Science"
+)
+row_names_df <- data.frame(
+  Variable = row.names(bp_corr_lst$corr)
+) 
+df <- cbind(row_names_df, as.data.frame(bp_corr_lst$corr))
+RplotterPkg::create_table(
+  x = df,
+  caption = "Blood Pressure Correlations"
+)
+```
+
+Note the high correlation between *Weight* and *BSA* at .88. Also *Weight* and *Pulse* have a correlation of .66
+
+3. Call `RregressPkg::low_predictor_collinarity()` with the data frame of predictors:
+Using the default of .75 for the threshold correlation.
+```{r}
+bloodpress_predictors_dt <- bloodpress_dt[, !c("BP")]
+low_collinearity_lst <- RregressPkg::low_predictor_collinearity(
+  df = bloodpress_predictors_dt
+)
+```
+
+The function's algorithm has removed the *Weight* predictor: 
+```{r}
+low_collinearity_lst$predictors
+```
+
