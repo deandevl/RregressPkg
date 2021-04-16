@@ -1,0 +1,155 @@
+---
+title: "Demo of RregressPkg::plot_pca()"
+output: 
+   html_document:
+    toc: yes
+    toc_depth: 3
+params:
+  date: !r Sys.Date()    
+---
+
+```{r,setup, include=FALSE, eval=TRUE}
+options(knitr.table.format = "html", width = 140)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.width = 12, fig.height = 8)
+```
+
+<div>Author: Rick Dean</div>
+<div>Article date: `r params$date`</div>
+
+```{r, warning=FALSE, message=FALSE}
+library(knitr)
+library(kableExtra)
+library(data.table)
+library(here)
+library(RregressPkg)
+library(RplotterPkg)
+library(dplyr)
+library(ggrepel)
+library(ggplot2)
+library(grid)
+
+current_dir <- here::here()
+```
+
+## Principal Components of pilots
+
+Data Reference: Travers, R. M. W. (1939), “The Use of a Discriminant Function in the Treatment of Psychological Group Differences,” Psychometrika, 4 (1), 25–32.
+
+R scripts inspired by [Principal Component Analysis with R Example](https://aaronschlegel.me/principal-component-analysis-r-example.html)
+
+1. Read in the data:
+```{r}
+data_path <- file.path(current_dir, "demos/data/pilot.data")
+pilots <- utils::read.table(data_path, sep = "")
+measurements <- c("Intelligence", "Form Relations", "Dynamometer", "Dotting", "Coordination", "Perservation")
+colnames(pilots) <- c("Group", measurements)
+```
+
+2. Create a data frame of measurements and pilot groups:
+```{r}
+pilots_df <- as.data.frame(pilots[2:7])
+pilots_df <- pilots_df %>%
+  mutate(Group = ifelse(pilots$Group == 1, "Apprentice", "Pilot"))
+```
+
+3. Call `RregressPkg::plot_pca()` with scaling of the raw measurements:
+```{r, fig.width=13, fig.height=13}
+pilots_pca_plots <- RregressPkg::plot_pca(
+  df = pilots_df,
+  measures = measurements,
+  center = T,
+  scale. = T,
+  rank. = 4,
+  aes_fill = "Group",
+  pts_size = 2,
+  palette_colors = c("red","blue"),
+  x_limits = c(-4, 2),
+  x_major_breaks = seq(-4, 2, 1),
+  title = "Principal Components of Pilots and Apprentices",
+  subtitle = "6 tested attributes from 20 pilots and 20 apprentices",
+  figure_width = 12
+)
+```
+
+4. Plot the percentage of explained variance by the components (Scree plot):
+```{r}
+plot_df <- data.frame(
+  component = c("PC1", "PC2", "PC3", "PC4", "PC5", "PC6"),
+  variance = pilots_pca_plots$percent_var
+)
+RplotterPkg::create_bar_plot(
+  df = plot_df,
+  aes_x = "component",
+  aes_y = "variance",
+  title = "Principal Components of Pilot Traits",
+  subtitle = "Component's percent of explained variance",
+  x_title = "Component",
+  y_title = "Percent of Explained Variance",
+  rot_y_tic_label = T,
+  bar_fill = "blue"
+)
+```
+
+## Principal Components of wine
+
+Data Reference: [Wine Data Set](https://archive.ics.uci.edu/ml/datasets/Wine)
+
+R script inspired by [Principal Component Analysis in R, R-Bloggers](https://www.r-bloggers.com/2017/01/principal-component-analysis-in-r/)
+
+1. Read in the data:
+```{r}
+data_path <- file.path(current_dir, "demos/data/wine.data")
+wine_df <- read.table(data_path, sep = ",")
+```
+
+2. 2. Create a data frame of measurements and *Class* groups:
+```{r}
+measurements <- c("Alcohol","Malic acid","Ash","Alcalinity of ash",
+                  "Magnesium", "Total phenols", "Flavanoids", "Nonflavanoid phenols",
+                  "Proanthocyanins", "Color intensity", "Hue", "OD280/OD315 of diluted wines", "Proline")
+colnames(wine_df) <- c("Class",measurements)
+
+wine_df <- wine_df %>%
+  mutate(Class = as.factor(wine_df$Class))
+```
+
+3. Call `RregressPkg::plot_pca()` with scaling of the raw measurements:
+```{r, fig.width=13, fig.height=13}
+wine_pca_plots <- RregressPkg::plot_pca(
+  df = wine_df,
+  center = T,
+  scale. = T,
+  rank. = 5,
+  measures = measurements,
+  aes_fill = "Class",
+  pts_size = 2,
+  palette_colors = c("red","blue","green"),
+  x_limits = c(-5, 5),
+  x_major_breaks = seq(-5, 5, 1),
+  y_limits = c(-5,5),
+  y_major_breaks = seq(-5,5,1),
+  title = "Principal Components of Wine",
+  subtitle = "13 attributes from 178 samples of 3 classes",
+  figure_width = 12
+)
+```
+
+4. Plot the percentage of explained variance by the components (Scree plot):
+```{r}
+plot_df <- data.frame(
+  component = c("PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10", "PC11", "PC12", "PC13"),
+  variance = wine_pca_plots$percent_var
+)
+RplotterPkg::create_bar_plot(
+  df = plot_df,
+  aes_x = "component",
+  aes_y = "variance",
+  title = "Principal Components of Wine Traits",
+  subtitle = "Component's percent of explained variance",
+  x_title = "Component",
+  y_title = "Percent of Explained Variance",
+  rot_y_tic_label = T,
+  bar_fill = "blue",
+  order_bars = "desc"
+)
+```

@@ -14,6 +14,7 @@ plot_pca(
   pca_pair = c("PC1", "PC2"),
   pca_values = "loading",
   aes_fill = NULL,
+  aes_label = NULL,
   title = NULL,
   subtitle = NULL,
   x_limits = NULL,
@@ -39,9 +40,12 @@ plot_pca(
 \item{scale.}{A logical indicating whether the variables should be scaled to have unit variance before the
 analysis takes place.}
 
-\item{tol}{A value indicating the magnitude below which components should be omitted.}
+\item{tol}{A value indicating the magnitude below which components should be omitted. Components
+are omitted if their standard deviations are less than or equal to \code{tol} times
+the standard deviation of the first component.}
 
-\item{rank.}{A number specifying the maximal rank, i.e. maximal number of principal components to be used.}
+\item{rank.}{A number specifying the maximal rank, i.e. maximal number of principal components to be used.
+If NULL then the length of the \code{measures} argument.}
 
 \item{measures}{A vector of column names from \code{df} that specifies the measurements to include in the PCA.}
 
@@ -52,6 +56,9 @@ are \dQuote{PC1}, \dQuote{PC2}, \dQuote{PC3}, ...}
 \dQuote{correlation}.}
 
 \item{aes_fill}{A string that sets the variable name from \code{df} for the aesthetic mapping for fill.}
+
+\item{aes_label}{A string that sets the variable name from \code{df} for the aesthetic mapping for labeling
+observations. If labeling then the package \code{ggrepel} is required.}
 
 \item{title}{A string that sets the plot title.}
 

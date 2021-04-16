@@ -17,14 +17,19 @@
 #' @param center A logical indicating whether the variables should be shifted to zero centered.
 #' @param scale. A logical indicating whether the variables should be scaled to have unit variance before the
 #'  analysis takes place.
-#' @param tol A value indicating the magnitude below which components should be omitted.
+#' @param tol A value indicating the magnitude below which components should be omitted. Components
+#'  are omitted if their standard deviations are less than or equal to \code{tol} times
+#'  the standard deviation of the first component.
 #' @param rank. A number specifying the maximal rank, i.e. maximal number of principal components to be used.
+#'  If NULL then the length of the \code{measures} argument.
 #' @param measures A vector of column names from \code{df} that specifies the measurements to include in the PCA.
 #' @param pca_pair A string vector that names the pair of components of interest. Acceptable values
 #'   are \dQuote{PC1}, \dQuote{PC2}, \dQuote{PC3}, ...
 #' @param pca_values A string that sets the type of PCA values to display. Acceptable values are \dQuote{loading} or
 #'  \dQuote{correlation}.
 #' @param aes_fill A string that sets the variable name from \code{df} for the aesthetic mapping for fill.
+#' @param aes_label A string that sets the variable name from \code{df} for the aesthetic mapping for labeling
+#'  observations. If labeling then the package \code{ggrepel} is required.
 #' @param title A string that sets the plot title.
 #' @param subtitle A string that sets the plot subtitle.
 #' @param x_limits Depending on the class of \code{aes_x}, a numeric/Date/POSIXct 2 element vector that sets the minimum
@@ -81,6 +86,7 @@ plot_pca <- function(
   pca_pair = c("PC1", "PC2"),
   pca_values = "loading",
   aes_fill = NULL,
+  aes_label = NULL,
   title = NULL,
   subtitle = NULL,
   x_limits = NULL,
@@ -141,6 +147,11 @@ plot_pca <- function(
       pts_size = pts_size,
       palette_colors = palette_colors
     )
+
+    if(!is.null(aes_label)){
+      samp_plot <- samp_plot +
+        ggrepel::geom_text_repel(aes(label = !!sym(aes_label)))
+    }
 
     # create a circle plot of pca loadings
     # define a circle function to plot

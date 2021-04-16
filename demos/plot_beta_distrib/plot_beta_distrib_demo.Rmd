@@ -1,0 +1,78 @@
+---
+title: "Demo of RregressPkg::plot_beta_distrib()"
+output: 
+   html_document:
+    toc: yes
+    toc_depth: 3
+params:
+  date: !r Sys.Date()    
+---
+
+```{r,setup, include=FALSE, eval=TRUE}
+options(knitr.table.format = "html", width = 140)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.width = 12, fig.height = 8)
+```
+
+<div>Author: Rick Dean</div>
+<div>Article date: `r params$date`</div>
+
+
+```{r, warning=FALSE, message=FALSE}
+library(knitr)
+library(kableExtra)
+library(data.table)
+library(here)
+library(data.table)
+library(ggplot2)
+library(RregressPkg)
+library(RplotterPkg)
+```
+
+
+
+## Sampling from a population
+
+1. Read in the 2018 ANES pilot study for Donald Trump:
+```{r}
+current_dir <- here::here()
+ data_path <- file.path(current_dir, "demos/data/therms18.rda")
+ load(data_path)
+therms_dt <- data.table(
+  Rating = na.omit(Therms18$fttrump)
+)
+```
+
+2. Plot the histogram of the Trump ratings:
+```{r}
+RplotterPkg::create_bar_plot(
+  df = therms_dt,
+  aes_x = "Rating",
+  title = "The Thermometer Ratings for Donald Trump",
+  subtitle = "Source: ANES' 2018 Pilot Study",
+  bar_fill = "blue",
+  bar_alpha = 0.5,
+  rot_y_tic_label = T,
+  x_breaks = seq(0,100,10),
+  y_limits = c(0,500),
+  y_major_breaks = seq(0,500,100)
+)
+```
+
+3. Create a randomized beta distribution with the sample rating's estimate for mean and standard deviation:
+```{r}
+beta_est_lst <- RregressPkg::plot_beta_distrib(
+  n = 100000,
+  mean = mean(therms_dt$Rating),
+  sd = sd(therms_dt$Rating),
+  min_val = 0,
+  max_val = 100,
+  seed = 8675309,
+  title = "Simulated Trump Thermometer Ratings",
+  x_title = "Rating",
+  bar_fill = "blue",
+  bar_alpha = 0.5
+)
+beta_est_lst$histo_plot
+```
+
+
