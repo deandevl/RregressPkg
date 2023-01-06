@@ -1,0 +1,14 @@
+low_predictor_collinearity_demo     R script to demo low_predictor_collinearity
+ols_calc_demo                       R script to demo ols_calc
+ols_intervals_demo                  R script to demo ols_intervals
+ols_restricted_model_demo           R script to demo ols_restricted_model
+plot_beta_distrib_demo              R script to demo plot_beta_distrib
+plot_correlations_demo              R script to demo plot_correlations
+plot_fit_residuals_demo             R script to demo plot_fit_residuals
+plot_influence_demo                 R script to demo plot_influence
+plot_matrix_scatter_demo            R script to demo plot_matrix_scatter
+plot_pca_demo                       R script to demo plot_pca
+plot_predictor_demo                 R script to demo plot_predictor
+plot_qq_demo                        R script to demo plot_qq
+plot_replace_missing_demo           R script to demo plot_replace_missing
+plot_residuals_check_demo           R script to demo plot_residuals_check

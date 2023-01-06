@@ -1,0 +1,12 @@
+Package: RregressPkg
+Title: R Regression Function Helpers
+Version: 0.0.0.9000
+Author: Rick Dean  <deanr3@bardstown.com>
+Maintainer: Rick Dean, <deanr3@bardstown.com>
+Description: Provides plotting routines and other functions for assisting in model development and forecasting in the R language.
+Imports: ggplot2,data.table,grid,gtable,rlang,ggrepel,RplotterPkg
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
