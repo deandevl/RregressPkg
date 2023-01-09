@@ -254,8 +254,8 @@ layout <- list(
 
 RplotterPkg::multi_panel_grid(
   layout = layout,
-  col_widths = c(2.5, 2.5, 2.5),
-  row_heights = c(2.5, 2.5, 2.5)
+  col_widths = c(10.5, 10, 10),
+  row_heights = 10
 )
 
 # Plot the fitted versus residual values for the housing price equation

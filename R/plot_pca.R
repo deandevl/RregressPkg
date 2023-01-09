@@ -14,6 +14,7 @@
 #'
 #'
 #' @param df The data frame containing rows of observations across columns of numeric measurements.
+#' @param measures A vector of column names from code{df} to used in the pca.
 #' @param center A logical indicating whether the variables should be shifted to zero centered.
 #' @param scale. A logical indicating whether the variables should be scaled to have unit variance before the
 #'  analysis takes place.
@@ -76,6 +77,7 @@
 #' @export
 plot_pca <- function(
   df = NULL,
+  measures = NULL,
   center = FALSE,
   scale. = FALSE,
   tol = NULL,
@@ -99,7 +101,7 @@ plot_pca <- function(
   show_meas_table = TRUE,
   display_plot = TRUE
 ){
-    dt <- data.table::setDT(df)
+    dt <- data.table::as.data.table(df)
     measures_dt <- dt[, ..measures]
     pca <- stats::prcomp(measures_dt, center = center, scale. = scale., tol = tol, rank. = rank.)
     percent_var <- pca$sdev^2/sum(pca$sdev^2)*100
@@ -164,8 +166,8 @@ plot_pca <- function(
       x2 = pca_values_df[[pca_pair[1]]],
       y2 = pca_values_df[[pca_pair[2]]]
     )
-    browser()
-    loadings_plot = ggplot2::ggplot() +
+
+    loadings_plot <- ggplot2::ggplot() +
       ggplot2::geom_path(data = corcir, aes(x = x, y = y), color = "gray65") +
       ggplot2::geom_segment(data = arrows, aes(x = x1, y = y1, xend = x2, yend = y2), color = "gray65") +
       #ggplot2::geom_text(data = pca_values_df, aes(x = !!sym(pca_pair[1]), y = !!sym(pca_pair[2])), label = rownames(pca_values_df)) +

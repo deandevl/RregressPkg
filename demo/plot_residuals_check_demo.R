@@ -25,8 +25,7 @@ RregressPkg::plot_residuals_check(
   residual_label_threshold = 120,
   leverage_label_threshold = 0.2,
   label_sd = 1.0,
-  title = "Check Residuals",
-  subtitle = "count ~ time_ipc + prop_partner",
+  title = "Check Residuals: count ~ time_ipc + prop_partner",
   pts_size = 2.5,
   pts_fill = "green",
   pts_color = "black"

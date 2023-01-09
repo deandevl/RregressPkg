@@ -14,7 +14,6 @@ plot_residuals_check(
   label_color = "red",
   label_sd = NULL,
   title = NULL,
-  subtitle = NULL,
   axis_text_size = 11,
   pts_color = "black",
   pts_fill = "white",
@@ -51,8 +50,6 @@ residual is greater than the \code{label_threshold}.}
 pair of horizontal dotted lines. Typical values could be 1 or 2 standard deviations.}
 
 \item{title}{A string that sets the plot title.}
-
-\item{subtitle}{A string that sets the subtitle of the figure.}
 
 \item{axis_text_size}{A numeric that sets the font size along the axis'. Default is 11.}
 

@@ -27,7 +27,6 @@
 #' @param label_sd A numeric that sets the number times +/- residual standard deviations to plot as a
 #'  pair of horizontal dotted lines. Typical values could be 1 or 2 standard deviations.
 #' @param title A string that sets the plot title.
-#' @param subtitle A string that sets the subtitle of the figure.
 #' @param axis_text_size A numeric that sets the font size along the axis'. Default is 11.
 #' @param pts_color A string that sets the color of the points.
 #' @param pts_fill A string that sets the fill color of the points.
@@ -59,7 +58,6 @@ plot_residuals_check <- function(
   label_color = "red",
   label_sd =NULL,
   title = NULL,
-  subtitle = NULL,
   axis_text_size = 11,
   pts_color = "black",
   pts_fill = "white",
@@ -164,10 +162,9 @@ plot_residuals_check <- function(
 
   RplotterPkg::multi_panel_grid(
     layout = layout,
-    col_widths = c(5,5),
-    row_heights = c(5,5),
+    col_widths = c(12,12),
+    row_heights = c(12,12),
     title = title,
-    subtitle = subtitle,
     display_plot = display_plot
   )
 }

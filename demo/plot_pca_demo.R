@@ -15,7 +15,7 @@ library(RregressPkg)
 # R scripts inspired by "Principal Component Analysis with R Example"(https://aaronschlegel.me/principal-component-analysis-r-example.html)
 
 ## Read in the data:
-data_path <- file.path(here::here(), "data/pilot.data")
+data_path <- file.path(here::here(), "demo/data/pilot.data")
 pilots <- utils::read.table(data_path, sep = "")
 measurements <- c("Intelligence", "Form Relations", "Dynamometer", "Dotting", "Coordination", "Perservation")
 colnames(pilots) <- c("Group", measurements)
@@ -36,8 +36,7 @@ pilots_pca_plots <- RregressPkg::plot_pca(
   x_limits = c(-4, 2),
   x_major_breaks = seq(-4, 2, 1),
   title = "Principal Components of Pilots and Apprentices",
-  subtitle = "6 tested attributes from 20 pilots and 20 apprentices",
-  figure_width = 8
+  subtitle = "6 tested attributes from 20 pilots and 20 apprentices"
 )
 
 # Plot the percentage of explained variance by the components (Scree plot):
@@ -64,7 +63,7 @@ RplotterPkg::create_bar_plot(
 # R script inspired by "Principal Component Analysis in R, R-Bloggers"(https://www.r-bloggers.com/2017/01/principal-component-analysis-in-r/)
 
 # Read in the data:
-data_path <- file.path(here::here(), "data/wine.data")
+data_path <- file.path(here::here(), "demo/data/wine.data")
 wine_dt <- data.table::as.data.table(read.table(data_path, sep = ","))
 
 # Create a data table with new column names; set "Class" column as factor:

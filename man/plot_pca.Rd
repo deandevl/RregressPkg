@@ -6,6 +6,7 @@
 \usage{
 plot_pca(
   df = NULL,
+  measures = NULL,
   center = FALSE,
   scale. = FALSE,
   tol = NULL,
@@ -32,6 +33,8 @@ plot_pca(
 }
 \arguments{
 \item{df}{The data frame containing rows of observations across columns of numeric measurements.}
+
+\item{measures}{A vector of column names from code{df} to used in the pca.}
 
 \item{center}{A logical indicating whether the variables should be shifted to zero centered.}
 

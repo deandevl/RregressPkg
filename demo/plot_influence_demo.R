@@ -11,7 +11,7 @@ library(RregressPkg)
 #    Example 11-2 Revisited
 
 # Set up the data:
-data_path <- file.path(here::here(), "data/influence2.txt")
+data_path <- file.path(here::here(), "demo/data/influence2.txt")
 influence2_data_dt <- data.table::fread(data_path) %>%
   .[, .(x, y)] %>%
   .[, id := lapply(1:nrow(.), function(i){paste0("ob_",i)})]

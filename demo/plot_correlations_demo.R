@@ -5,6 +5,7 @@ library(magrittr)
 library(RplotterPkg)
 library(RregressPkg)
 
+# ------------------------ggplot2::midwest variables-----------------------------------
 #  Create a data frame with 12 selected variables and 437 observations:
 midwest_dt <- data.table::as.data.table(ggplot2::midwest) %>%
   .[, .(popdensity, percwhite, percblack, popadults, perchsd, percollege, percprof,
@@ -19,7 +20,7 @@ midwest_corr_lst <- RregressPkg::plot_correlations(
 midwest_corr_lst$corr_plot
 
 
-# Correlations related to blood pressure
+# ---------------------Correlations related to blood pressure--------------------------------
 # Source: PennState Stat 501 Eberly College of Science, Section 12.1, Example 12.1
 
 data_path <- file.path(here::here(), "demo/data/bloodpress.txt")

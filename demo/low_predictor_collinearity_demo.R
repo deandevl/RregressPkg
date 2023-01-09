@@ -9,7 +9,7 @@ library(RregressPkg)
 # Lesson 12: Multicollinearity & Other Regression Pitfalls.
 
 # Read in the data set.
-data_path <- file.path(here::here(), "demos/data/bloodpress.txt")
+data_path <- file.path(here::here(), "demo/data/bloodpress.txt")
 bloodpress_dt <- data.table::fread(data_path)
 bloodpress_dt <- bloodpress_dt[, !c("Pt")]
 
