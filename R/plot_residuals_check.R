@@ -162,8 +162,8 @@ plot_residuals_check <- function(
 
   RplotterPkg::multi_panel_grid(
     layout = layout,
-    col_widths = c(12,12),
-    row_heights = c(12,12),
+    col_widths = c(8,8),
+    row_heights = c(8,8),
     title = title,
     display_plot = display_plot
   )

@@ -10,25 +10,31 @@ ols_calc(
   Y_mt = NULL,
   formula_obj = NULL,
   confid_level = 0.95,
-  na_omit = FALSE
+  na_omit = FALSE,
+  print_detail = FALSE
 )
 }
 \arguments{
 \item{df}{A data frame with columns for observed response and predictors.}
 
 \item{X_mt}{In lieu of both \code{df} and \code{formula_obj}, a matrix of predictor values can be
-submitted along with \code{Y_mt}.}
+submitted along with \code{Y_mt}. Note that \code{X_mt} must have column names. Also, to include
+an intercept, \code{X_mt} should have a column of 1's.}
 
 \item{Y_mt}{In lieu of both \code{df} and \code{formula_obj}, a single column matrix of response
 values can be submitted along with \code{X_mt}.}
 
 \item{formula_obj}{A formula object following the rules of \code{stats::lm()} construction.
-For example: y ~ log(a) + b + I(b^2) or suppress the constant with \code{0} in the formula.}
+(e.g y ~ log(a) + b + I(b^2)). A constant parameter is implicitly added. To suppress the
+constant add 0 to the formula (e.g. y ~ 0 + x).}
 
 \item{confid_level}{A numeric that defines the confidence level for estimating confidence
 intervals. The default is 0.95.}
 
 \item{na_omit}{A logical which if TRUE will omit rows that have NA values.}
+
+\item{print_detail}{A logical which if TRUE will print a few statistics on the model.
+The default is FALSE.}
 }
 \value{
 Returning a named list of data frames with OLS coefficient estimates, residual

@@ -111,7 +111,7 @@ plot_fit_residuals <- function(
     df = df,
     formula_obj = formula_obj
   )
-
+  
   if(!is.null(id_col)){
     id_v <- df[[id_col]]
   }else {
@@ -122,7 +122,7 @@ plot_fit_residuals <- function(
     id = id_v,
     fit = ols_lst$fitted_vals
   )
-
+  
   if(residual_standardized){
     rse <- ols_lst$rse * sqrt(1 - diag(ols_lst$hat_mt))
     stand_resid <- ols_lst$residual_vals / rse
@@ -134,7 +134,7 @@ plot_fit_residuals <- function(
   }else {
     plot_dt[, residuals := ols_lst$residual_vals]
   }
-
+  
   fit_residual_plot <- RplotterPkg::create_scatter_plot(
     df = plot_dt,
     aes_x = "fit",
@@ -164,7 +164,7 @@ plot_fit_residuals <- function(
     show_major_grids = show_major_grids,
     show_minor_grids = show_minor_grids
   )
-
+  
   if(!residual_standardized){
     fit_residual_plot <- fit_residual_plot +
       ggplot2::geom_hline(yintercept = 0, color = zero_line_color, size = zero_line_size)
@@ -177,7 +177,7 @@ plot_fit_residuals <- function(
         ggplot2::geom_hline(yintercept = -residuals_sd, color = zero_line_color, size = zero_line_size, linetype = "longdash")
     }
   }
-
+  
   if(!is.null(label_threshold)){
     label_data <- plot_dt[abs(residuals) >= label_threshold]
     fit_residual_plot <- fit_residual_plot +
@@ -190,6 +190,6 @@ plot_fit_residuals <- function(
     fit_residual_plot <- fit_residual_plot +
       ggplot2::geom_line(aes(x = trend_model$x, y = trend_model$fitted), color = trend_line_color, size = trend_line_size)
   }
-
-  return(plot = fit_residual_plot)
+  
+  return(fit_residual_plot)
 }

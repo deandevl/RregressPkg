@@ -1,14 +1,15 @@
 library(data.table)
-library(magrittr)
-library(RregressPkg)
-library(RplotterPkg)
 library(wooldridge)
+library(magrittr)
+library(RplotterPkg)
+library(RregressPkg)
 
-# The following R script demonstrates the function RregressionPkg::ols_calc() for estimating OLS model coefficients.
+# The following R script demonstrates the function RregressionPkg::ols_calc() 
+# for estimating OLS model coefficients.
 
 # ----------------------College GPA Model------------------------------
 # Data source for this demo is from "Using R for Introductory Econometrics" by Florian Heiss, Section 4.1 page 105 and
-# "Introductory Econometrics, A Modern Approach, 6th edition" by Jeffery Wooldridge, Section 4.2 page 115.
+# "Introductory Econometrics, A Modern Approach, 6th edition" by Jeffery Wooldridge, Section 4.2b page 115.
 
 # The text presents the following model explaining college GPA (`colGPA`):
 
@@ -28,8 +29,8 @@ gpa1_dt <- data.table::as.data.table(gpa1) %>%
 # Call `RregressPkg::ols_calc()`:
 gpa1_ols_ls <- RregressPkg::ols_calc(
   df = gpa1_dt,
-  formula_obj = stats::as.formula("colGPA ~ hsGPA + ACT + skipped")
-)
+  formula_obj = colGPA ~ hsGPA + ACT + skipped,
+  print_detail = T)
 
 # The coefficients:
 RplotterPkg::create_table(
@@ -107,3 +108,4 @@ RplotterPkg::create_table(
   source_note = "ANOVA for OLS model log(rd) ~ log(sales) + profmarg",
   container_width_px = 500
 )
+
