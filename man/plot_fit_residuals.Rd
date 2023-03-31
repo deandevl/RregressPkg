@@ -2,13 +2,13 @@
 % Please edit documentation in R/plot_fit_residuals.R
 \name{plot_fit_residuals}
 \alias{plot_fit_residuals}
-\title{Function creates a scatter plot of the OLS fitted versus residual values.}
+\title{Function creates a scatter plot of the fitted versus residual values.}
 \usage{
 plot_fit_residuals(
-  df = NULL,
-  formula_obj = NULL,
+  fitted_v,
+  residual_v,
+  id_v = NULL,
   residual_standardized = FALSE,
-  id_col = NULL,
   label_threshold = NULL,
   label_color = "red",
   label_sd = NULL,
@@ -44,19 +44,16 @@ plot_fit_residuals(
 )
 }
 \arguments{
-\item{df}{A data frame containing values for both the predictor values and the associated
-response variable.}
+\item{fitted_v}{A required numeric vector of fitted values.}
 
-\item{formula_obj}{A formula object following the rules of \code{stats::lm()} construction.
-For example: y ~ log(a) + b + I(b^2) or suppress the constant with \code{0} in the formula.}
+\item{residual_v}{A required numeric vector of cooresponding residual values.}
+
+\item{id_v}{An optional numeric/string vector that labels the fit/residual pairs. If this argument is NULL then
+the fit/residual pairs are numbered for identification.}
 
 \item{residual_standardized}{A logical which if TRUE will divide the raw residuals by their
 estimated standard deviation. The square root of the absolute value of each standardized
 residual is then plotted against their respective fitted value.}
-
-\item{id_col}{An optional argument that names the column from data frame \code{df} providing
-each observation with a unique identification value.  If this argument is NULL then
-data frame row numbers are used for identification.}
 
 \item{label_threshold}{A numeric that sets the residual threshold beyond which observations
 will be labeled with their id.}

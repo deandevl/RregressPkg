@@ -1,9 +1,9 @@
-library(data.table, quietly = T)
-library(ggplot2, quietly = T)
+library(data.table)
+library(ggplot2)
 library(magrittr)
-library(wooldridge, quietly = T)
-library(RplotterPkg, quietly = T)
-library(RregressPkg, quietly = T)
+library(wooldridge)
+library(RplotterPkg)
+library(RregressPkg)
 
 # Checking the assumptions of three linear models
 
@@ -40,6 +40,11 @@ set.seed(42)
 sim_data_1_df <- sim_1()
 fit_1_lm <- lm(y ~ x, data = sim_data_1_df)
 
+sim_1_ols <- RregressPkg::ols_calc(
+  df = sim_data_1_df,
+  formula_obj = fit_1_lm
+)
+
 RplotterPkg::create_scatter_plot(
   df = sim_data_1_df,
   aes_x = "x",
@@ -56,8 +61,8 @@ RplotterPkg::create_scatter_plot(
 
 # Plot the fitted versus residual values for Model 1:
 RregressPkg::plot_fit_residuals(
-  df = sim_data_1_df,
-  formula_obj = fit_1_lm,
+  fitted_v = sim_1_ols$fitted_vals,
+  residual_v = sim_1_ols$residual_vals,
   subtitle = "Data from Model 1",
   x_title = "Fitted",
   y_title = "Residuals",
@@ -98,6 +103,11 @@ set.seed(42)
 sim_data_2_df <- sim_2()
 fit_2_lm <- lm(y ~ x, data = sim_data_2_df)
 
+sim_2_ols <- RregressPkg::ols_calc(
+  df = sim_data_2_df,
+  formula_obj = fit_2_lm
+)
+
 RplotterPkg::create_scatter_plot(
   df = sim_data_2_df,
   aes_x = "x",
@@ -118,8 +128,8 @@ RplotterPkg::create_scatter_plot(
 
 # Plot the fitted versus residual values for Model 2:
 RregressPkg::plot_fit_residuals(
-  df = sim_data_2_df,
-  formula_obj = fit_2_lm,
+  fitted_v = sim_2_ols$fitted_vals,
+  residual_v = sim_2_ols$residual_vals,
   subtitle = "Data from Model 2",
   x_title = "Fitted",
   y_title = "Residuals",
@@ -153,6 +163,11 @@ set.seed(42)
 sim_data_3_df <- sim_3()
 fit_3_lm <- lm(y ~ x, data = sim_data_3_df)
 
+sim_3_ols <- RregressPkg::ols_calc(
+  df = sim_data_3_df,
+  formula_obj = fit_3_lm
+)
+
 RplotterPkg::create_scatter_plot(
   df = sim_data_3_df,
   aes_x = "x",
@@ -173,8 +188,8 @@ RplotterPkg::create_scatter_plot(
 
 # Plot the fitted versus residual values for Model 3:
 RregressPkg::plot_fit_residuals(
-  df = sim_data_3_df,
-  formula_obj = fit_3_lm,
+  fitted_v = sim_3_ols$fitted_vals,
+  residual_v = sim_3_ols$residual_vals,
   subtitle = "Data from Model 3",
   x_title = "Fitted",
   y_title = "Residuals",
@@ -260,9 +275,13 @@ RplotterPkg::multi_panel_grid(
 
 # Plot the fitted versus residual values for the housing price equation
 housing_price_lm <- price ~ lotsize + sqrft + bdrms
-RregressPkg::plot_fit_residuals(
+housing_price_ols <- RregressPkg::ols_calc(
   df = hprice1_dt,
-  formula_obj = housing_price_lm,
+  formula_obj = housing_price_lm
+)
+RregressPkg::plot_fit_residuals(
+  fitted_v = housing_price_ols$fitted_vals,
+  residual_v = housing_price_ols$residual_vals,
   subtitle = "Data from housing prices",
   x_title = "Fitted",
   y_title = "Residuals",
@@ -297,9 +316,13 @@ RplotterPkg::create_table(
 # the heteroskedasticity is reduced.
 
 log_formula_obj <-  log(price) ~ log(lotsize) + log(sqrft) + bdrms
-RregressPkg::plot_fit_residuals(
+housing_price_log_ols <- RregressPkg::ols_calc(
   df = hprice1_dt,
-  formula_obj = log_formula_obj,
+  formula_obj = log_formula_obj
+)
+RregressPkg::plot_fit_residuals(
+  fitted_v = housing_price_log_ols$fitted_vals,
+  residual_v = housing_price_log_ols$residual_vals,
   x_title = "Fitted",
   y_title = "Residuals",
   trend_line = FALSE,

@@ -1,4 +1,4 @@
-#' Function creates a scatter plot of the OLS fitted versus residual values.
+#' Function creates a scatter plot of the fitted versus residual values.
 #'
 #' Function returns a ggplot2 scatter plot object which can be further modified.
 #'
@@ -6,16 +6,13 @@
 #'   The square root of the absolute value of each standardized residual is then plotted against their
 #'   respective fitted value.
 #'
-#' @param df A data frame containing values for both the predictor values and the associated
-#'  response variable.
-#' @param formula_obj A formula object following the rules of \code{stats::lm()} construction.
-#'  For example: y ~ log(a) + b + I(b^2) or suppress the constant with \code{0} in the formula.
+#' @param fitted_v A required numeric vector of fitted values.
+#' @param residual_v A required numeric vector of cooresponding residual values.
+#' @param id_v An optional numeric/string vector that labels the fit/residual pairs. If this argument is NULL then
+#'  the fit/residual pairs are numbered for identification.
 #' @param residual_standardized A logical which if TRUE will divide the raw residuals by their
 #'  estimated standard deviation. The square root of the absolute value of each standardized
 #'  residual is then plotted against their respective fitted value.
-#' @param id_col An optional argument that names the column from data frame \code{df} providing
-#'  each observation with a unique identification value.  If this argument is NULL then
-#'  data frame row numbers are used for identification.
 #' @param label_threshold A numeric that sets the residual threshold beyond which observations
 #'  will be labeled with their id.
 #' @param label_color A string that sets the label/point color for observations whose absolute
@@ -69,10 +66,10 @@
 #'
 #' @export
 plot_fit_residuals <- function(
-  df = NULL,
-  formula_obj = NULL,
+  fitted_v,
+  residual_v,
+  id_v = NULL,
   residual_standardized = FALSE,
-  id_col = NULL,
   label_threshold = NULL,
   label_color = "red",
   label_sd = NULL,
@@ -106,39 +103,29 @@ plot_fit_residuals <- function(
   show_major_grids = TRUE,
   show_minor_grids = TRUE
 ){
-
-  ols_lst <- RregressPkg::ols_calc(
-    df = df,
-    formula_obj = formula_obj
-  )
-  
-  if(!is.null(id_col)){
-    id_v <- df[[id_col]]
-  }else {
-    id_v <- 1: nrow(df)
+  if(is.null(id_v)){
+    id_v <- 1: length(fitted_v)
   }
 
   plot_dt <- data.table (
     id = id_v,
-    fit = ols_lst$fitted_vals
+    fit = fitted_v,
+    residual = residual_v
   )
-  
+  residuals_sd <- sd(residual_v)
   if(residual_standardized){
-    rse <- ols_lst$rse * sqrt(1 - diag(ols_lst$hat_mt))
-    stand_resid <- ols_lst$residual_vals / rse
-    plot_dt[, residuals := sqrt(abs(stand_resid))]
+    stand_resid <- residual_v / residuals_sd
+    plot_dt[, residual := sqrt(abs(stand_resid))]
     if(!is.null(label_threshold)){
-      stand_resid <- label_threshold / rse
+      stand_resid <- label_threshold / residuals_sd
       label_threshold <- sqrt(abs(stand_resid))
     }
-  }else {
-    plot_dt[, residuals := ols_lst$residual_vals]
   }
   
   fit_residual_plot <- RplotterPkg::create_scatter_plot(
     df = plot_dt,
     aes_x = "fit",
-    aes_y = "residuals",
+    aes_y = "residual",
     title = title,
     subtitle = subtitle,
     x_title = x_title,
@@ -170,23 +157,22 @@ plot_fit_residuals <- function(
       ggplot2::geom_hline(yintercept = 0, color = zero_line_color, size = zero_line_size)
 
     if(!is.null(label_sd)){
-      residuals_sd <- sd(ols_lst$residual_vals)
       fit_residual_plot <- fit_residual_plot +
-        ggplot2::geom_hline(yintercept = residuals_sd, color = zero_line_color, size = zero_line_size, linetype = "longdash")
+        ggplot2::geom_hline(yintercept = label_sd * residuals_sd, color = zero_line_color, size = zero_line_size, linetype = "longdash")
       fit_residual_plot <- fit_residual_plot +
-        ggplot2::geom_hline(yintercept = -residuals_sd, color = zero_line_color, size = zero_line_size, linetype = "longdash")
+        ggplot2::geom_hline(yintercept = -label_sd * residuals_sd, color = zero_line_color, size = zero_line_size, linetype = "longdash")
     }
   }
   
   if(!is.null(label_threshold)){
-    label_data <- plot_dt[abs(residuals) >= label_threshold]
+    label_data <- plot_dt[abs(residual) >= label_threshold]
     fit_residual_plot <- fit_residual_plot +
       ggplot2::geom_point(data = label_data, color = label_color, size = 2.5) +
       ggrepel::geom_text_repel(data = label_data, aes(label = id), color = label_color)
   }
 
   if(trend_line){
-    trend_model <- stats::loess(residuals ~ fit, data = plot_dt)
+    trend_model <- stats::loess(residual ~ fit, data = plot_dt)
     fit_residual_plot <- fit_residual_plot +
       ggplot2::geom_line(aes(x = trend_model$x, y = trend_model$fitted), color = trend_line_color, size = trend_line_size)
   }

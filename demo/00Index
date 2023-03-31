@@ -5,8 +5,8 @@ plot_beta_distrib_demo              R script to demo plot_beta_distrib
 plot_correlations_demo              R script to demo plot_correlations
 plot_fit_residuals_demo             R script to demo plot_fit_residuals
 plot_influence_demo                 R script to demo plot_influence
-plot_matrix_scatter_demo            R script to demo plot_matrix_scatter
+plot_model_check_demo               R script to demo plot_model_check
+plot_pairs_demo                     R script to demo plot_pairs
 plot_pca_demo                       R script to demo plot_pca
 plot_qq_demo                        R script to demo plot_qq
 plot_replace_missing_demo           R script to demo plot_replace_missing
-plot_residuals_check_demo           R script to demo plot_residuals_check
