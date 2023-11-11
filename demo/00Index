@@ -1,3 +1,4 @@
+dataframe_report_demo               R script to demo dataframe_report
 low_predictor_collinearity_demo     R script to demo low_predictor_collinearity
 ols_calc_demo                       R script to demo ols_calc
 ols_restricted_model_demo           R script to demo ols_restricted_model
