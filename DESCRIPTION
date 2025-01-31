@@ -1,0 +1,37 @@
+Package: RregressPkg
+Type: Package
+Title: Functions to Assist in Linear Regression
+Version: 0.1.0
+Authors@R: c(
+    person(
+      "Rick", "Dean",
+      email = "deanr3@bardstown.com",
+      role = c("aut", "cre", "cph"),
+      comment = c(ORCID = "0009-0005-8086-8436")
+    )
+  )
+Maintainer: Rick Dean <deanr3@bardstown.com>
+Description: Provides plotting routines and other functions 
+  for assisting in model development and forecasting.
+License: MIT + file LICENSE  
+URL: https://github.com/deandevl/RregressPkg
+BugReports: https://github.com/deandevl/RregressPkg/issues
+Depends: R (>= 4.4.0)
+Encoding: UTF-8
+Language: en-US
+LazyData: true
+Imports: 
+    data.table (>= 1.16.4),
+    rlang (>= 1.1.4),
+    ggplot2 (>= 3.5.1),
+    ggplotify (>= 0.1.2),
+    gtable (>= 0.3.6),
+    RplotterPkg (>= 0.1.0)
+Suggests: 
+    here (>= 1.0.1),
+    mlbench (>= 2.1-6),
+    testthat (>= 3.0.0),
+    vdiffr (>= 1.0.8),
+    wooldridge (>= 1.4-4)
+Config/testthat/edition: 3
+RoxygenNote: 7.3.2

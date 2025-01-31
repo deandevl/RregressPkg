@@ -1,0 +1,12 @@
+---
+title: "RregressPkg"
+format: 
+  gfm: default
+  html: default
+editor: source
+date: last-modified
+author: Rick Dean
+---
+
+
+Provides plotting routines and other functions for assisting in model development and forecasting in the R language.
