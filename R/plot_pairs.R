@@ -74,6 +74,13 @@ plot_pairs <- function(
   rot_y_tic_label = FALSE,
   plot_dim = 12
 ){
+  if(is.null(df)){
+    stop("A dataframe is required and must not be NULL")
+  }
+  if(is.null(var_name_scaling)){
+    stop("The parameter 'var_name_scaling' must be a named list of variable scaling and not NULL")
+  }
+
   var_names <- names(var_name_scaling)
   n <- length(var_names) - 1
   vars_comb <- utils::combn(var_names, 2)

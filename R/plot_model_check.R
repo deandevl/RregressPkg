@@ -28,7 +28,8 @@
 #' @param pts_size A numeric value that sets the size of the points.
 #' @param histo_fill A string that sets the histogram fill color.
 #' @param histo_alpha A numeric that sets the histogram fill alpha.
-#' @param ref_line_color A string that sets the reference lines color.
+#' @param zero_line A logical which if \code{TRuE} plots the zero horizontal reference line..
+#' @param zero_line_color A string that sets the zero line color.
 #' @param trend_line A logical which if \code{TRUE} plots a polynomial based trend line across the residuals.
 #' @param trend_line_color A string that sets the color of the trend line.
 #'
@@ -61,7 +62,7 @@
 #'   residual_v = sim_ols$residual_vals,
 #'   histo_fill = "blue",
 #'   histo_alpha = 0.5,
-#'   ref_line_color = "darkorange"
+#'   zero_line_color = "darkorange"
 #' )
 #'
 #' @importFrom data.table data.table
@@ -87,9 +88,10 @@ plot_model_check <- function(
   pts_size = 1,
   histo_fill = "white",
   histo_alpha = 1.0,
-  ref_line_color = "red",
+  zero_line = TRUE,
+  zero_line_color = "red",
   trend_line = TRUE,
-  trend_line_color = "red"
+  trend_line_color = "blue"
 ){
   plot_fit_resid <- RregressPkg::plot_fit_residuals(
     fitted_v = fitted_v,
@@ -108,7 +110,8 @@ plot_model_check <- function(
     pts_size = pts_size,
     trend_line = trend_line,
     trend_line_color = trend_line_color,
-    zero_line_color = ref_line_color,
+    zero_line = zero_line,
+    zero_line_color = zero_line_color,
     zero_line_width = 1.0
   )
 
@@ -130,7 +133,7 @@ plot_model_check <- function(
     axis_text_size = axis_text_size,
     rot_y_tic_label = TRUE
   ) +
-    ggplot2::geom_abline(color = ref_line_color)
+    ggplot2::geom_abline(color = zero_line_color)
 
 
   if(is.null(id_v)){
@@ -157,7 +160,7 @@ plot_model_check <- function(
     pts_fill = pts_fill,
     pts_alpha = pts_alpha,
     pts_size = pts_size,
-    ref_line_color = ref_line_color,
+    ref_line_color = zero_line_color,
     ref_line_width = 0.5,
     ci_line_type = "dashed",
     labels_n = 3
@@ -181,7 +184,8 @@ plot_model_check <- function(
 
   multi_plot_check <- RplotterPkg::multi_panel_grid(
     layout = layout,
-    title = title
+    title = title,
+    do_grid = TRUE
   )
 
   return(multi_plot_check)

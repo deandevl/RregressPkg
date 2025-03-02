@@ -52,7 +52,8 @@
 #' @param pts_size A numeric value that sets the size of the points.
 #' @param trend_line A logical which if \code{TRUE} plots a polynomial based trend line across the residuals.
 #' @param trend_line_color A string that sets the color of the trend line.
-#' @param trend_line_size A numeric that sets the width of the trend line.
+#' @param trend_line_width A numeric that sets the width of the trend line.
+#' @param zero_line A logical which if \code{TRUE} plots the zero horizontal reference line.
 #' @param zero_line_color A string that sets the color of the zero horizontal reference line.
 #' @param zero_line_width A numeric that sets the width of the zero horizontal reference line.
 #' @param show_major_grids A logical that controls the appearance of major grids.
@@ -125,9 +126,10 @@ plot_fit_residuals <- function(
   pts_alpha = 1.0,
   pts_size = 1,
   trend_line = TRUE,
-  trend_line_color = "red",
-  trend_line_size = 1.0,
-  zero_line_color = "blue",
+  trend_line_color = "blue",
+  trend_line_width = 1.0,
+  zero_line = TRUE,
+  zero_line_color = "red",
   zero_line_width = 1.4,
   show_major_grids = TRUE,
   show_minor_grids = TRUE
@@ -184,9 +186,10 @@ plot_fit_residuals <- function(
   )
 
   if(!residual_standardized){
-    fit_residual_plot <- fit_residual_plot +
-      ggplot2::geom_hline(yintercept = 0, color = zero_line_color, linewidth = zero_line_width)
-
+    if(zero_line){
+      fit_residual_plot <- fit_residual_plot +
+        ggplot2::geom_hline(yintercept = 0, color = zero_line_color, linewidth = zero_line_width)
+    }
     if(!is.null(label_sd)){
       fit_residual_plot <- fit_residual_plot +
         ggplot2::geom_hline(yintercept = label_sd * residuals_sd, color = zero_line_color, linewidth = zero_line_width, linetype = "longdash")
@@ -213,7 +216,7 @@ plot_fit_residuals <- function(
   if(trend_line){
     trend_model <- stats::loess(residual ~ fit, data = plot_dt)
     fit_residual_plot <- fit_residual_plot +
-      ggplot2::geom_line(aes(x = trend_model$x, y = trend_model$fitted), color = trend_line_color, linewidth = trend_line_size)
+      ggplot2::geom_line(aes(x = trend_model$x, y = trend_model$fitted), color = trend_line_color, linewidth = trend_line_width)
   }
 
   return(fit_residual_plot)

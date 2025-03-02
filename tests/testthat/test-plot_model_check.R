@@ -28,7 +28,7 @@ test_that("plot_model_check()", {
       residual_v = sim_ols$residual_vals,
       histo_fill = "blue",
       histo_alpha = 0.5,
-      ref_line_color = "darkorange"
+      zero_line_color = "darkorange"
     )
   })
   expect_true(is.ggplot(a_plot))

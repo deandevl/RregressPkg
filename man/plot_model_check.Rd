@@ -20,9 +20,10 @@ plot_model_check(
   pts_size = 1,
   histo_fill = "white",
   histo_alpha = 1,
-  ref_line_color = "red",
+  zero_line = TRUE,
+  zero_line_color = "red",
   trend_line = TRUE,
-  trend_line_color = "red"
+  trend_line_color = "blue"
 )
 }
 \arguments{
@@ -60,7 +61,9 @@ pair of horizontal dotted lines. Typical values could be 1 or 2 standard deviati
 
 \item{histo_alpha}{A numeric that sets the histogram fill alpha.}
 
-\item{ref_line_color}{A string that sets the reference lines color.}
+\item{zero_line}{A logical which if \code{TRuE} plots the zero horizontal reference line..}
+
+\item{zero_line_color}{A string that sets the zero line color.}
 
 \item{trend_line}{A logical which if \code{TRUE} plots a polynomial based trend line across the residuals.}
 
@@ -105,7 +108,7 @@ a_plot <- RregressPkg::plot_model_check(
   residual_v = sim_ols$residual_vals,
   histo_fill = "blue",
   histo_alpha = 0.5,
-  ref_line_color = "darkorange"
+  zero_line_color = "darkorange"
 )
 
 }

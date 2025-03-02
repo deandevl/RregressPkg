@@ -35,9 +35,10 @@ plot_fit_residuals(
   pts_alpha = 1,
   pts_size = 1,
   trend_line = TRUE,
-  trend_line_color = "red",
-  trend_line_size = 1,
-  zero_line_color = "blue",
+  trend_line_color = "blue",
+  trend_line_width = 1,
+  zero_line = TRUE,
+  zero_line_color = "red",
   zero_line_width = 1.4,
   show_major_grids = TRUE,
   show_minor_grids = TRUE
@@ -118,7 +119,9 @@ Use \code{NA} to refer to the existing minimum and maximum.}
 
 \item{trend_line_color}{A string that sets the color of the trend line.}
 
-\item{trend_line_size}{A numeric that sets the width of the trend line.}
+\item{trend_line_width}{A numeric that sets the width of the trend line.}
+
+\item{zero_line}{A logical which if \code{TRUE} plots the zero horizontal reference line.}
 
 \item{zero_line_color}{A string that sets the color of the zero horizontal reference line.}
 
