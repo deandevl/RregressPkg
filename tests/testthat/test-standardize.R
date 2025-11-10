@@ -5,15 +5,10 @@ test_that("standardize() namespaces", {
 
 test_that("standardize()",{
   expect_snapshot({
-    cols <- c("colGPA", "hsGPA", "ACT")
-    dt <- data.table::as.data.table(wooldridge::gpa1) |>
-      _[, ..cols]
-
-    stand_dt <- RregressPkg::standardize(
-      df = dt,
-      cols = c("hsGPA", "ACT"),
+    RregressPkg::standardize(
+      df = wooldridge::gpa1,
+      cols = c("colGPA","hsGPA", "ACT"),
       mul = 2
     )
-    head(stand_dt)
   })
 })

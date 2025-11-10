@@ -16,6 +16,7 @@
 #' @return Returns a data.table with the numeric columns standardized into z-scores.
 #'
 #' @importFrom data.table as.data.table
+#' @importFrom stats sd
 #'
 #' @export
 standardize <- function(
@@ -33,8 +34,8 @@ standardize <- function(
       return(x)
     }
   }
-  dt <- data.table::copy(df)
+  dt <- data.table::as.data.table(df)
   dt_stand <- dt[, ..cols]
-  return_dt <- dt[, (cols) := lapply(dt_stand, get_scores)]
-  return(return_dt)
+  dt_stand[, (cols) := lapply(dt_stand, get_scores)]
+  dt_stand
 }

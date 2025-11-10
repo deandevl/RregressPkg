@@ -61,7 +61,7 @@ pair of horizontal dotted lines. Typical values could be 1 or 2 standard deviati
 
 \item{histo_alpha}{A numeric that sets the histogram fill alpha.}
 
-\item{zero_line}{A logical which if \code{TRuE} plots the zero horizontal reference line..}
+\item{zero_line}{A logical which if \code{TRuE} plots the zero horizontal reference line.}
 
 \item{zero_line_color}{A string that sets the zero line color.}
 
@@ -75,7 +75,7 @@ A multi-paneled ggplot2 object with various plots for checking
 }
 \description{
 Function provides multi-plots to check model assumptions of heteroscedasticity, normally distributed
- residuals and leverage of each datum.
+ residuals.
 
 Function plots fitted values versus residuals, fitted values versus response
  values, a QQ plot of the standardized residuals, and histogram of residual values.

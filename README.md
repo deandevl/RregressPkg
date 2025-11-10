@@ -1,6 +1,5 @@
-# RregressPkg
 Rick Dean
-2025-01-31
+2025-10-12
 
 Provides plotting routines and other functions for assisting in model
 development and forecasting in the R language.

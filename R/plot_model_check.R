@@ -2,7 +2,7 @@
 #'
 #' @description
 #' Function provides multi-plots to check model assumptions of heteroscedasticity, normally distributed
-#'  residuals and leverage of each datum.
+#'  residuals.
 #'
 #' Function plots fitted values versus residuals, fitted values versus response
 #'  values, a QQ plot of the standardized residuals, and histogram of residual values.
@@ -28,7 +28,7 @@
 #' @param pts_size A numeric value that sets the size of the points.
 #' @param histo_fill A string that sets the histogram fill color.
 #' @param histo_alpha A numeric that sets the histogram fill alpha.
-#' @param zero_line A logical which if \code{TRuE} plots the zero horizontal reference line..
+#' @param zero_line A logical which if \code{TRuE} plots the zero horizontal reference line.
 #' @param zero_line_color A string that sets the zero line color.
 #' @param trend_line A logical which if \code{TRUE} plots a polynomial based trend line across the residuals.
 #' @param trend_line_color A string that sets the color of the trend line.

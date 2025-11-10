@@ -60,7 +60,8 @@ ols_BP_test_calc <- function(
   return(
     list(
       statistic = LM_val,
-      p.value = LM_p_val
+      p.value = LM_p_val,
+      df = k
     )
   )
 }
